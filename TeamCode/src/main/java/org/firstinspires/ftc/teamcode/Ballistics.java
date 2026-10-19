@@ -34,12 +34,23 @@ public class Ballistics
         fireInfo.angle = angle;
 
         return fireInfo;
+    
+    
     }
 
-    public static void main(){
+     
+     static Vector2 GetVelocityOffset(double goalX, double goalY, double velocityX, double velocityY, double targetvelocityX){
+      Vector2 coordinate = new Vector2();
+      
+      double time = goalX/targetvelocityX;    
+      double distanceX = (-time)*velocityX;
+      double distanceY = (-time)*velocityY;
+      
+      coordinate.x = distanceX;
+      coordinate.y = distanceY;
+
+      return coordinate; 
+     }
         
-
-
-    }
 
 }
