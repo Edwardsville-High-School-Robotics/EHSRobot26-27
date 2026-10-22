@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
 import java.util.ArrayList;
 
@@ -68,13 +69,27 @@ public class Hive {
     {
         Coordinate3D pose = new Coordinate3D(0,0,0);
 
+        Coordinate3D estimateFirePos = new Coordinate3D(0,0,0);
+
         for (int i = 0; i < 4; i++)
         {
 //            aprilTags[i].
-//            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
-
+            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
+            if (aprilTags[i] == null)
+                continue;
+            Coordinate3D offset = new Coordinate3D(xOffsets[i], yOffset, zOffset);
+            Coordinate3D globalFireOffset = Matrix.RotateCoord(offset, aprilTags[i]);
+            Position position = tagPose.getPosition();
+            estimateFirePos.x += globalFireOffset.x + position.x;
+            estimateFirePos.y += globalFireOffset.y + position.y;
+            estimateFirePos.z += globalFireOffset.z + position.z;
         }
-        return pose;
+
+        estimateFirePos.x /= GetNumTags();
+        estimateFirePos.y /= GetNumTags();
+        estimateFirePos.z /= GetNumTags();
+
+        return estimateFirePos;
     }
 
 }
