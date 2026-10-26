@@ -26,7 +26,6 @@ public class AprilTag extends LinearOpMode {
 
         Hive hives[] = new Hive[4];
 
-        ArrayList<Integer> IDS = new ArrayList<Integer>();
         while (opModeIsActive()){
             for (Hive h : hives)
             {

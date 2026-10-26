@@ -71,7 +71,8 @@ public class Hive {
         for (int i = 0; i < 4; i++)
         {
 //            aprilTags[i].
-//            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
+            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
+            tagPose.getOrientation();
 
         }
         return pose;
