@@ -16,75 +16,56 @@ public class AprilTag extends LinearOpMode {
     final int[] BLUE_FIELD = {38, 39, 40, 41};
     final int[] BLUE_AUDIENCE = {42,43,44,45};
     int[] temp = {0,0,0,0};
+
+
     Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
     @Override
     public void runOpMode() {
         limelight.start();
         waitForStart();
-        List<LLResultTypes.FiducialResult> Results;
+
+        boolean isRed = false;
+
+        Hive hives[] = new Hive[4];
+
         ArrayList<Integer> IDS = new ArrayList<Integer>();
-        if (limelight.isConnected()) {
-
-            LLResult result = limelight.getLatestResult();
-            Results = result.getFiducialResults();
-            for(int i = 0; i < Results.size(); i++)
+        while (opModeIsActive()){
+            for (Hive h : hives)
             {
-                IDS.add(Results.get(i).getFiducialId());
+                h.Clear();
             }
-            if(IDS.size() != 4)
-            {
-                if(IDS.size() < 4)
+
+            if (limelight.isConnected()) {
+
+                LLResult result = limelight.getLatestResult();
+                List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
+                Coordinate3D estimatedFirePos;
+
+                for (LLResultTypes.FiducialResult tag : results) {
+                    HiveType type = Hive.GetHiveType(tag.getFiducialId());
+                    hives[type.ordinal()].AddAprilTag(tag);
+                }
+
+                HiveType selectedHive;
+                if (isRed) {
+                    selectedHive = HiveType.RED_FIELD;
+                }
+                else {
+                    selectedHive = HiveType.BLUE_FIELD;
+                }
+
+                if (hives[selectedHive.ordinal()].GetNumTags() == 0)
                 {
-
+                    selectedHive = HiveType.values()[selectedHive.ordinal()+1];
                 }
-                else{
 
-                }
-            }
-            int BLUE_FIELD_COUNT = 0;
-            int RED_FIELD_COUNT = 0;
-            int RED_AUDIENCE_COUNT = 0;
-            int BLUE_AUDIENCE_COUNT = 0;
-
-            for(int i = 0; i < IDS.size(); i++)
-            {
-                for(int j = 0; j < 4; j++)
+                if (hives[selectedHive.ordinal()].GetNumTags() == 0)
                 {
-                    if(IDS.get(i) == RED_AUDIENCE[j])
-                    {
-                        RED_AUDIENCE_COUNT++;
-                    }
-                    else if(IDS.get(i) == RED_FIELD[j])
-                    {
-                        RED_FIELD_COUNT++;
-                    }
-                    else if(IDS.get(i) == BLUE_AUDIENCE[j])
-                    {
-                        BLUE_AUDIENCE_COUNT++;
-                    }
-                    else if(IDS.get(i) == BLUE_FIELD[j])
-                    {
-                        BLUE_FIELD_COUNT++;
-                    }
+                    continue;
                 }
-            }
-            if(BLUE_AUDIENCE_COUNT > BLUE_FIELD_COUNT && BLUE_AUDIENCE_COUNT > RED_AUDIENCE_COUNT && BLUE_AUDIENCE_COUNT > RED_FIELD_COUNT)
-            {
-                temp = BLUE_AUDIENCE;
-            }
-            else if(BLUE_FIELD_COUNT > BLUE_AUDIENCE_COUNT && BLUE_FIELD_COUNT > RED_AUDIENCE_COUNT && BLUE_FIELD_COUNT > RED_FIELD_COUNT)
-            {
-                temp = BLUE_FIELD;
-            }
-            else if(RED_AUDIENCE_COUNT > BLUE_FIELD_COUNT && RED_AUDIENCE_COUNT > BLUE_AUDIENCE_COUNT && RED_AUDIENCE_COUNT > RED_FIELD_COUNT)
-            {
-                temp = RED_AUDIENCE;
-            }
-            else if(RED_FIELD_COUNT > BLUE_FIELD_COUNT && RED_FIELD_COUNT > RED_AUDIENCE_COUNT && RED_FIELD_COUNT > BLUE_AUDIENCE_COUNT)
-            {
-                temp = RED_FIELD;
-            }
 
+                Coordinate3D firePos = hives[selectedHive.ordinal()].CalculatePos();
+            }
         }
     }
 }

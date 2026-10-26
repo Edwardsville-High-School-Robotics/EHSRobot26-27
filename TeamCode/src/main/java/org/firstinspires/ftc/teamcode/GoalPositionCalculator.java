@@ -1,7 +1,9 @@
+import org.firstinspires.ftc.teamcode.Coordinate3D;
+
 public class GoalPositionCalculator {
     
 
-public static Coordinate3D GetGoalPos(
+public static Coordinate3D GetTagPos(
             double angleX,
             double angleY,
             double distance) {
