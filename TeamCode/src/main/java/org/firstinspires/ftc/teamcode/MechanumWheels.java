@@ -54,8 +54,8 @@ public class MechanumWheels {
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
         double frontLeftPower = (rotY + rotX + rot) / denominator;
         double backLeftPower = (rotY - rotX + rot) / denominator;
-        double frontRightPower = (rotY + rotX - rot) / denominator;
-        double backRightPower = (rotY - rotX - rot) / denominator;
+        double frontRightPower = (rotY - rotX - rot) / denominator;
+        double backRightPower = (rotY + rotX - rot) / denominator;
 
         leftFront.setPower(frontLeftPower * maxDrivePower);
         leftBack.setPower(backLeftPower * maxDrivePower);
