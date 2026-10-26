@@ -24,6 +24,8 @@ public class AprilTag extends LinearOpMode {
         limelight.start();
         waitForStart();
 
+        boolean isRed = false;
+
         Hive hives[] = new Hive[4];
 
         while (opModeIsActive()){
@@ -36,11 +38,32 @@ public class AprilTag extends LinearOpMode {
 
                 LLResult result = limelight.getLatestResult();
                 List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
+                Coordinate3D estimatedFirePos;
 
                 for (LLResultTypes.FiducialResult tag : results) {
                     HiveType type = Hive.GetHiveType(tag.getFiducialId());
                     hives[type.ordinal()].AddAprilTag(tag);
                 }
+
+                HiveType selectedHive;
+                if (isRed) {
+                    selectedHive = HiveType.RED_FIELD;
+                }
+                else {
+                    selectedHive = HiveType.BLUE_FIELD;
+                }
+
+                if (hives[selectedHive.ordinal()].GetNumTags() == 0)
+                {
+                    selectedHive = HiveType.values()[selectedHive.ordinal()+1];
+                }
+
+                if (hives[selectedHive.ordinal()].GetNumTags() == 0)
+                {
+                    continue;
+                }
+
+                Coordinate3D firePos = hives[selectedHive.ordinal()].CalculatePos();
             }
         }
     }
