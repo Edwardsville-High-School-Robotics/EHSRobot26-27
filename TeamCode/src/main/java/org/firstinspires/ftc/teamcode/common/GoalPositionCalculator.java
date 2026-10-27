@@ -1,12 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common;
 
-public class Coordinate3D {
+public class GoalPositionCalculator {
+    
 
-    public double x;
-    public double y;
-    public double z;
-
-    public static double[] GetGoalPos(
+public static Coordinate3D GetTagPos(
             double angleX,
             double angleY,
             double distance) {
@@ -22,12 +19,6 @@ public class Coordinate3D {
         double z = distance
                 * Math.sin(Math.toRadians(angleY));
 
-        return new double[] {x, y, z};
-    }
-
-    public Coordinate3D(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        return new Coordinate3D(x, y, z);
     }
 }

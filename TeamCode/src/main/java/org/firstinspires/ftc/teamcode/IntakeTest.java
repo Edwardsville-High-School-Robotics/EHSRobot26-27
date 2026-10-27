@@ -39,6 +39,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.common.PIDController;
+
 /*
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -70,7 +72,7 @@ public class IntakeTest extends LinearOpMode {
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
@@ -91,9 +93,9 @@ public class IntakeTest extends LinearOpMode {
             double prevTimeSinceUpdate = timeSinceUpdate;
             timeSinceUpdate =  lime_light.getTimeSinceLastUpdate();
 
-            double y = gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = -gamepad1.left_stick_x;
             double rx = -gamepad1.right_stick_x;
+            double x = -gamepad1.left_stick_x;
+            double y = gamepad1.left_stick_y;
 
 
             if (gamepad1.aWasPressed()) {
@@ -186,7 +188,6 @@ public class IntakeTest extends LinearOpMode {
             telemetry.addData("P", "P: " + pdController.GetP());
             telemetry.addData("D", "D: " + pdController.GetD());
             telemetry.addData("I", "I: " + pdController.GetI());
-            telemetry.addData("Area", "Area: " + pdController.area);
             telemetry.addData("rx", "rx: " + rx);
             telemetry.update();
         }

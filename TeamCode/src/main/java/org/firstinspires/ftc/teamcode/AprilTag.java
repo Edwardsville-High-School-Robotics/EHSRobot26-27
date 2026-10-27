@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.common.Coordinate3D;
+import org.firstinspires.ftc.teamcode.common.Hive;
+import org.firstinspires.ftc.teamcode.common.HiveType;
+
 import java.util.List;
 
 public class AprilTag extends LinearOpMode {

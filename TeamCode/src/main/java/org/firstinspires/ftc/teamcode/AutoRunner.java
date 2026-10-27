@@ -1,16 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.pedropathing.ivy.Command;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.ivy.Scheduler;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-public class Auto extends LinearOpMode {
+import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.systems.Shooter;
+
+public class AutoRunner extends LinearOpMode {
+
+    private Follower follower;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
 
         boolean isRed = false;
         boolean isAudience = false;
+
+        Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         while (!isStarted())
         {
@@ -36,10 +45,12 @@ public class Auto extends LinearOpMode {
         }
 
         boolean isShooting = true;
+        Scheduler.reset();
+        Shooter greatAimer = new Shooter();
+        follower = Constants.create(hardwareMap);
 
-        Command autoCommand = Command.build();
+
 
         waitForStart();
-        autoCommand.start();
     }
 }

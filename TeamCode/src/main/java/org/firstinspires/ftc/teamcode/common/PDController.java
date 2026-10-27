@@ -1,36 +1,37 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common;
+
 import com.pedropathing.utils.Timer;
-public class PIDController {
-    double p, i, d, c;
+
+public class PDController {
+
+    double p, d, c;
     double prev;
-    double area = 0;
-    Timer timer;
-    public PIDController(double p, double i, double d)
+    com.pedropathing.utils.Timer timer;
+
+
+    public PDController(double p, double d)
     {
         this.p = p;
-        this.i = i;
         this.d = d;
         this.c = 0;
         this.prev = 0;
         this.timer = new Timer();
     }
-    public PIDController(double p, double i, double d, double c)
+    // if we wanted a constant
+    public PDController(double p, double d, double c)
     {
         this.p = p;
-        this.i = i;
         this.d = d;
         this.c = c;
         this.prev = 0;
         this.timer = new Timer();
     }
+
     public void SetP(double p)
     {
         this.p = p;
     }
-    public void SetI(double i)
-    {
-        this.i = i;
-    }
+
     public void SetD(double d)
     {
         this.d = d;
@@ -40,14 +41,12 @@ public class PIDController {
     {
         return p;
     }
-    public double GetI()
-    {
-        return i;
-    }
+
     public double GetD()
     {
         return d;
     }
+
     public double Calculate(double target, double current)
     {
         double error = target - current;
@@ -57,13 +56,11 @@ public class PIDController {
         if (prev != 0)
         {
             slope = (error - prev) / (timer.seconds());
-            area += 0.5 * (error+prev) * timer.seconds();
-            //area += error * timer.getElapsedTime();
         }
 
         prev = error;
         timer.reset();
 
-        return p * (error + i * area + slope * d) + c;
+        return (error + slope * d) * p + c;
     }
 }

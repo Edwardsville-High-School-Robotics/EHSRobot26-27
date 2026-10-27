@@ -1,20 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-
-import java.util.ArrayList;
-
-enum HiveType
-{
-    RED_FIELD,
-    RED_AUDIENCE,
-    BLUE_FIELD,
-    BLUE_AUDIENCE
-}
 
 public class Hive {
 

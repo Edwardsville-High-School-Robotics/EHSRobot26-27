@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common;
 
 public class Ballistics
 {
     static final double STARTING_FIRING_SPEED = 3.0;
 
-    static double GetFiringAngle(double targetX, double targetY, double firingSpeed)
+    public static double GetFiringAngle(double targetX, double targetY, double firingSpeed)
     {
         double discriminant = Math.pow(firingSpeed,4)-19.6 *Math.pow(firingSpeed, 2)*targetY-96.04*Math.pow(targetY,2);
         double answer = (Math.pow(firingSpeed, 2) - Math.sqrt(discriminant))/(9.8*targetX);
@@ -12,7 +12,7 @@ public class Ballistics
     }
 
     // firing speed, firing angle
-    static FireInfo GetFireInfo(double targetX, double targetY, double minimumRange)
+    public static FireInfo GetFireInfo(double targetX, double targetY, double minimumRange)
     {
         FireInfo fireInfo = new FireInfo();
         fireInfo.angle = 0;
@@ -39,15 +39,15 @@ public class Ballistics
     }
 
      
-     static Vector2 GetVelocityOffset(double goalX, double goalY, double velocityX, double velocityY, double targetvelocityX){
-      Vector2 coordinate = new Vector2();
+     public static double[] GetVelocityOffset(double goalX, double goalY, double velocityX, double velocityY, double targetvelocityX){
+      double[] coordinate = {0,0};
       
       double time = goalX/targetvelocityX;    
       double distanceX = (-time)*velocityX;
       double distanceY = (-time)*velocityY;
       
-      coordinate.x = distanceX;
-      coordinate.y = distanceY;
+      coordinate[0] = distanceX;
+      coordinate[1] = distanceY;
 
       return coordinate; 
      }

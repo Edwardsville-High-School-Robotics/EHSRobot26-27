@@ -3,7 +3,7 @@
 // These are the FTC SDK docs: https://javadoc.io/doc/org.firstinspires.ftc
 // As of 9/21/2026 this algorithm attempts moves the limelight of a two axis gimbal, facing the april tag.
 
-package org.firstinspires;
+package org.firstinspires.ftc.teamcode;
 
 // Imported code for the limelight 3a as well as other robot functions.
 import com.qualcomm.hardware.limelightvision.LLResult;
