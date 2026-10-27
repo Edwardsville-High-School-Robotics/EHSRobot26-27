@@ -17,7 +17,7 @@ public class LLSystem {
 
     private Limelight3A lime_light;
     private boolean isDetecting;
-    LLSystem(Limelight3A limelight)
+    public LLSystem(Limelight3A limelight)
     {
         isDetecting = false;
 

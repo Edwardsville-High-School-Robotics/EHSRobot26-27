@@ -8,11 +8,12 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.Command;
 
 import org.firstinspires.ftc.teamcode.systems.Feeder;
+import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class RedFieldAuto {
 
-    public Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder) {
+    public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llsystem) {
         Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
