@@ -6,6 +6,7 @@ import com.pedropathing.ivy.Scheduler;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.auto.BlueAudienceAuto;
 import org.firstinspires.ftc.teamcode.auto.BlueFieldAuto;
 import org.firstinspires.ftc.teamcode.auto.RedAudienceAuto;
 import org.firstinspires.ftc.teamcode.auto.RedFieldAuto;
@@ -69,11 +70,11 @@ public class AutoRunner extends LinearOpMode {
         {
             if (isAudience)
             {
-//                autoRoutine = BlueAudienceAuto.autoRoutine(follower, shooter, feeder, llsystem);
+                autoRoutine = BlueAudienceAuto.autoRoutine(follower, shooter, feeder, llsystem);
             }
             else
             {
-//                autoRoutine = BlueFieldAuto.autoRoutine(follower, shooter, feeder, llsystem);
+                autoRoutine = BlueFieldAuto.autoRoutine(follower, shooter, feeder, llsystem);
             }
         }
 

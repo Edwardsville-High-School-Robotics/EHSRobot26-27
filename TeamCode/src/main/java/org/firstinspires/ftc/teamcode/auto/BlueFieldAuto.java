@@ -1,10 +1,18 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import static com.pedropathing.ivy.groups.Groups.sequential;
+
 import com.pedropathing.api.Paths;
 
 import com.pedropathing.api.PoseFactory;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
+
+import org.firstinspires.ftc.teamcode.systems.Feeder;
+import org.firstinspires.ftc.teamcode.systems.LLSystem;
+import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class BlueFieldAuto {
 
@@ -15,6 +23,10 @@ public class BlueFieldAuto {
     private final Pose point2 = poseFactory.of(80.7167, 115.1556, 14.4704);
     private final Pose point3 = poseFactory.of(100.6222, 109.4223, 163.9324);
     private final Pose point4 = poseFactory.of(137.7019, 36.8981, 117.0794);
+
+    public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llsystem) {
+        return sequential();
+    }
 
     public Path path1() {
         return Paths.line(start, point1).reverseTangent();

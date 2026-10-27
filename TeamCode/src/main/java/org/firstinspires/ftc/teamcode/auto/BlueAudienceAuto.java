@@ -21,16 +21,16 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
 public class BlueAudienceAuto {
-    private final PoseFactory poseFactory = PoseFactory.degrees();
+    private static final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(80, 12, 90);
-    private final Pose path1 = poseFactory.of(132, 24, 180);
-    private final Pose path1Control1 = poseFactory.of(80, 34, 0);
+    private static final Pose start = poseFactory.of(80, 12, 90);
+    private static final Pose path1 = poseFactory.of(132, 24, 180);
+    private static final Pose path1Control1 = poseFactory.of(80, 34, 0);
 
-    public Path path1() {
+    public static Path path1() {
         return Paths.curve(start, path1Control1, path1).linear(start, path1);
     }
-    public Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
+    public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
         Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
