@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.common.HiveType;
 
 public class Shooter {
     final double FIRE_SPEED = 4;
+    final double FIRE_MOTOR_SPEED = 1000;
     private boolean isShooting;
 
     double goal_height = 54;
@@ -17,6 +18,8 @@ public class Shooter {
             new Pose2D(DistanceUnit.INCH, 57.1, 85, AngleUnit.DEGREES, 0), // red field
             new Pose2D(DistanceUnit.INCH, 84.4, 55, AngleUnit.DEGREES, 0), // blue aud
             new Pose2D(DistanceUnit.INCH, 84.4, 85, AngleUnit.DEGREES, 0)}; // blue field
+
+    DcMotorEx shooterMotorSmall, shooterMotorBig;
 
     public Shooter()
     {
@@ -39,5 +42,20 @@ public class Shooter {
     public boolean IsShooting()
     {
         return isShooting;
+    } 
+
+    public void StartShooting()
+    {
+        isShooting = true;
+        shooterMotorSmall.setVelocity(FIRE_MOTOR_SPEED);
+   
+        shooterMotorBig.setVelocity(FIRE_MOTOR_SPEED);
+    }
+
+    public void StopShooting()
+    {
+        isShooting = false;
+        shooterMotorSmall.setVelocity(0);
+        shooterMotorBig.setVelocity(0);
     }
 }
