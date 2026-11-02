@@ -13,6 +13,7 @@ public class Hive {
     final double[] xOffsets = {-6,-3,3,6};
     final double yOffset = 5.5;
     final double zOffset = 7.5;
+
     final int[] RED_FIELD = {30,31,32,33};
     final int[] RED_AUDIENCE = {34,35,36,37};
     final int[] BLUE_FIELD = {38, 39, 40, 41};

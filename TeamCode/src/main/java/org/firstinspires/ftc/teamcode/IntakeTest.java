@@ -40,6 +40,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.common.PIDController;
+import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 /*
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -87,6 +88,7 @@ public class IntakeTest extends LinearOpMode {
         double intakeMotorSpeed = 0.2;
 
         double timeSinceUpdate = 0;
+        Shooter shooter = new Shooter();
 
 
         while (opModeIsActive()) {
@@ -113,37 +115,31 @@ public class IntakeTest extends LinearOpMode {
 
             if (gamepad1.dpadLeftWasPressed())
             {
-                double d = pdController.GetD()-0.05;
-                pdController.SetD(d);
+                shooter.UpdateFireRate(-100);
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                double d = pdController.GetD()+0.05;
-                pdController.SetD(d);
+                shooter.UpdateFireRate(100);
             }
 
             if (gamepad1.leftBumperWasPressed())
             {
-                double p = pdController.GetP()-0.25;
-                pdController.SetP(p);
+                shooter.UpdateXOffset(-0.25);
             }
 
 
             if (gamepad1.rightBumperWasPressed())
             {
-                double p = pdController.GetP()+0.25;
-                pdController.SetP(p);
+                shooter.UpdateXOffset(0.25);
             }
             if(gamepad1.leftTriggerWasPressed())
             {
-                double i = pdController.GetI()+0.05;
-                pdController.SetI(i);
+                shooter.UpdateYOffset(-0.25);
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                double i = pdController.GetI()-0.05;
-                pdController.SetI(i);
+                shooter.UpdateXOffset(0.25);
             }
 
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
