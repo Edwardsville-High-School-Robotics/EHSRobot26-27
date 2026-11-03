@@ -16,16 +16,16 @@ public class LLSystem {
     private Hive[] hives;
 
     private Limelight3A lime_light;
-    private boolean isDetecting;
+    long lastUpdate;
+
     public LLSystem(Limelight3A limelight)
     {
-        isDetecting = false;
-
         if (!limelight.isRunning())
             limelight.start();
 
         this.lime_light = limelight;
         hives = new Hive[4];
+        lastUpdate = lime_light.getTimeSinceLastUpdate();
     }
 
     public boolean IsHiveUp(HiveType ht)
@@ -35,41 +35,49 @@ public class LLSystem {
         return coords.y > UP_THRESHOLD;
     }
 
-    public void DetectionLoop()
+    public void Detect()
     {
-        isDetecting = true;
-        long lastUpdate = lime_light.getTimeSinceLastUpdate();
-        while (isDetecting)
+        // skip until new update
+        if (lime_light.getTimeSinceLastUpdate() <= lastUpdate)
+            return;
+
+        LLResult result = lime_light.getLatestResult();
+        if (!result.isValid())
+            return;
+
+        // on new loop, clear hives
+        for (Hive hive : hives)
+            hive.Clear();
+
+        List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
+
+        // add april tags to their hives
+        for (LLResultTypes.FiducialResult tag : results) {
+            HiveType type = Hive.GetHiveType(tag.getFiducialId());
+            hives[type.ordinal()].AddAprilTag(tag);
+        }
+
+    }
+
+    public HiveType GetClosestHive()
+    {
+        double closest = 1000000; // big number
+        HiveType h = null;
+        for (int i=0; i<4; i++)
         {
-            // skip until new update
-            if (lime_light.getTimeSinceLastUpdate() <= lastUpdate)
-                continue;
-
-            LLResult result = lime_light.getLatestResult();
-            if (!result.isValid())
-                continue;
-
-            // on new loop, clear hives
-            for (Hive hive : hives)
-                hive.Clear();
-
-            List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
-
-            // add april tags to their hives
-            for (LLResultTypes.FiducialResult tag : results) {
-                HiveType type = Hive.GetHiveType(tag.getFiducialId());
-                hives[type.ordinal()].AddAprilTag(tag);
+            double dist = hives[i].CalculatePos().Length();
+            if (dist < closest)
+            {
+                h = HiveType.values()[i];
+                closest = dist;
             }
         }
+
+        return h;
     }
 
-    public void StopDetecting()
+    public Hive GetHive(HiveType hType)
     {
-        isDetecting = false;
-    }
-
-    public void StartDetecting()
-    {
-        isDetecting = true;
+        return hives[hType.ordinal()];
     }
 }

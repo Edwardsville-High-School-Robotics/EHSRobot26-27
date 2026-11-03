@@ -39,7 +39,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.common.Coordinate3D;
+import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
+import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 /*
@@ -59,6 +65,12 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 public class IntakeTest extends LinearOpMode {
     final double MAX_DRIVE_POWER = 1.0;
 
+    public String HiveTypeToString(HiveType hType)
+    {
+        if (hType == null)
+            return "none";
+        return hType.toString();
+    }
 
     @Override
     public void runOpMode() {
@@ -75,11 +87,11 @@ public class IntakeTest extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
+        LLSystem llSystem = new LLSystem(lime_light);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
         //PDController pdController = new PDController(15.0, 1.0);
         PIDController pdController = new PIDController(20.0, 0.05, 0.0);
-        lime_light.start();
         waitForStart();
 
         boolean isIntaking = false;
@@ -90,10 +102,17 @@ public class IntakeTest extends LinearOpMode {
         double timeSinceUpdate = 0;
         Shooter shooter = new Shooter();
 
+        // a = intake
+        // b = track
+        // y = shoot
+        // dpad-up/down = intake motor speed
+        // dpad-left/right = fire speed
+        // bumper-left/right = z offset
+        // trigger-left/right = y offset
+        // leftstick down = global/local toggle
+
 
         while (opModeIsActive()) {
-            double prevTimeSinceUpdate = timeSinceUpdate;
-            timeSinceUpdate =  lime_light.getTimeSinceLastUpdate();
 
             double rx = -gamepad1.right_stick_x;
             double x = -gamepad1.left_stick_x;
@@ -125,13 +144,13 @@ public class IntakeTest extends LinearOpMode {
 
             if (gamepad1.leftBumperWasPressed())
             {
-                shooter.UpdateXOffset(-0.25);
+                shooter.UpdateZOffset(-0.25);
             }
 
 
             if (gamepad1.rightBumperWasPressed())
             {
-                shooter.UpdateXOffset(0.25);
+                shooter.UpdateZOffset(0.25);
             }
             if(gamepad1.leftTriggerWasPressed())
             {
@@ -139,7 +158,7 @@ public class IntakeTest extends LinearOpMode {
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                shooter.UpdateXOffset(0.25);
+                shooter.UpdateYOffset(0.25);
             }
 
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
@@ -161,30 +180,51 @@ public class IntakeTest extends LinearOpMode {
             {
                 isTracking = !isTracking;
             }
-
-            if (!lime_light.isConnected())
+            if (gamepad1.yWasPressed())
             {
-                telemetry.addData("Limelight", "LL IS NOT CONNECTED");
+                if (shooter.IsShooting())
+                    shooter.StopShooting();
+                else
+                    shooter.StartShooting();
             }
-            else if (isTracking)
+
+
+            llSystem.Detect();
+            HiveType hType = llSystem.GetClosestHive();
+            Coordinate3D targetPos = new Coordinate3D(0,0,0);
+            boolean isDetected = hType != null;
+            if (isDetected) {
+                targetPos = llSystem.GetHive(hType).CalculatePos();
+            }
+
+            if (isTracking && isDetected)
             {
-                LLResult result = lime_light.getLatestResult();
-                if (result.isValid() && prevTimeSinceUpdate > timeSinceUpdate)
-                {
-                    double angleX = result.getTx();
-                    // target angle 0 (directly forward)
-                    // pdController.Calculate gives degrees/second the robot should be turning
-                    rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
-                }
+                double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
+                // target angle 0 (directly forward)
+                // pdController.Calculate gives degrees/second the robot should be turning
+                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
+                shooter.UpdateFiring(targetPos.z, targetPos.y);
             }
 
 
 
             mechWheels.SetSpeed(x, y, rx);
-            telemetry.addData("P", "P: " + pdController.GetP());
-            telemetry.addData("D", "D: " + pdController.GetD());
-            telemetry.addData("I", "I: " + pdController.GetI());
-            telemetry.addData("rx", "rx: " + rx);
+
+            telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
+            telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
+            telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
+            if (isTracking) {
+                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
+                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
+
+
+                telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());
+                telemetry.addData("Shooter", "Y-Offset = " + shooter.getYOffset());
+                telemetry.addData("Shooter", "Gear Ratio = " + shooter.getRatio());
+                telemetry.addData("Shooter", "Fire Speed = " + shooter.getFireSpeed());
+                telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
+
+            }
             telemetry.update();
         }
     }

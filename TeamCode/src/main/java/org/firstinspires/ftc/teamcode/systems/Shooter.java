@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.common.Ballistics;
+import org.firstinspires.ftc.teamcode.common.Coordinate3D;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 
 public class Shooter {
@@ -16,6 +17,7 @@ public class Shooter {
 
     double goal_height = 54;
 
+    double angle = 0;
     Pose2D[] hive_positions = {
             new Pose2D(DistanceUnit.INCH, 84.4, 55, AngleUnit.DEGREES, 0), // red aud
             new Pose2D(DistanceUnit.INCH, 57.1, 85, AngleUnit.DEGREES, 0), // red field
@@ -25,7 +27,7 @@ public class Shooter {
     DcMotorEx shooterMotorSmall, shooterMotorBig;
     Servo shooterServoSmall, shooterServoBig;
     double R = 10;
-    double xoffset = 0;
+    double zoffset = 0;
     double yoffset = 0;
 
     public Shooter()
@@ -38,7 +40,7 @@ public class Shooter {
         // distance is x
         double x = Math.sqrt(Math.pow(goalPos.getX(DistanceUnit.INCH) - currentPos.getX(DistanceUnit.INCH), 2) +
                 Math.pow(goalPos.getX(DistanceUnit.INCH) - currentPos.getX(DistanceUnit.INCH), 2));
-        return Ballistics.GetFiringAngle(x + offsetX, goal_height + offsetY, FIRE_SPEED);
+        return Ballistics.GetFiringAngleInch(x + offsetX, goal_height + offsetY, FIRE_SPEED);
     }
 
     public void Shoot()
@@ -72,25 +74,43 @@ public class Shooter {
     public void UpdateRatio(double ratio){
         R += ratio;
     }
-    public double getXOffset()
+    public double getZOffset()
     {
-        return xoffset;
+        return zoffset;
     }
     public double getYOffset()
     {
         return yoffset;
     }
-    public void UpdateXOffset(double xoff){
-        xoffset += xoff;
+    public double getRatio()
+    {
+        return R;
+    }
+    public double getAngle()
+    {
+        return angle;
+    }
+    public double getFireSpeed()
+    {
+        return FIRE_MOTOR_SPEED;
+    }
+
+    public void UpdateZOffset(double zoff){
+        zoffset += zoff;
     }
     public void UpdateYOffset(double yoff){
         yoffset += yoff;
     }
 
-    public void UpdateFiring(Pose2D currentPos, HiveType target)
+    public void UpdateFiring(double targetZ, double targetY)
     {
-        shooterServoBig.setPosition(GetAngle(currentPos, target, getXOffset(), getYOffset()) * R);
-        shooterServoSmall.setPosition(GetAngle(currentPos, target, getXOffset(), getYOffset()) * R);
+        if (isShooting) {
+            angle = Ballistics.GetFiringAngleInch(targetZ + getZOffset(), targetY + getYOffset(), FIRE_SPEED);
+            shooterServoBig.setPosition(angle * R);
+            shooterServoSmall.setPosition(angle * R);
+            shooterMotorSmall.setVelocity(FIRE_MOTOR_SPEED);
+            shooterMotorBig.setVelocity(FIRE_MOTOR_SPEED);
+        }
     }
 
 }

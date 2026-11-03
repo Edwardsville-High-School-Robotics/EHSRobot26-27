@@ -1,10 +1,16 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import androidx.annotation.NonNull;
+
+import java.text.DecimalFormat;
+
 public class Coordinate3D {
 
     public double x;
     public double y;
     public double z;
+
+    private static DecimalFormat df = new DecimalFormat("#.##");
 
     public static double[] GetGoalPos(
             double angleX,
@@ -25,9 +31,20 @@ public class Coordinate3D {
         return new double[] {x, y, z};
     }
 
+    public double Length()
+    {
+        return Math.sqrt(x*x + y*y + z*z);
+    }
+
     public Coordinate3D(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "("+df.format(x)+", "+df.format(y)+", "+df.format(z)+")";
     }
 }

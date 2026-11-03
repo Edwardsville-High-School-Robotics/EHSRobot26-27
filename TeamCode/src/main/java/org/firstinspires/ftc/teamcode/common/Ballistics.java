@@ -11,6 +11,16 @@ public class Ballistics
         return Math.atan(answer);
     }
 
+    public static double GetFiringAngleInch(double targetX, double targetY, double firingSpeed)
+    {
+        targetX /= 39.3700787402;
+        targetY /= 39.3700787402;
+
+        double discriminant = Math.pow(firingSpeed,4)-19.6 *Math.pow(firingSpeed, 2)*targetY-96.04*Math.pow(targetY,2);
+        double answer = (Math.pow(firingSpeed, 2) - Math.sqrt(discriminant))/(9.8*targetX);
+        return Math.atan(answer);
+    }
+
     // firing speed, firing angle
     public static FireInfo GetFireInfo(double targetX, double targetY, double minimumRange)
     {
@@ -20,11 +30,11 @@ public class Ballistics
 
         // code that does stuff
         double CurrentFiringSpeed = STARTING_FIRING_SPEED;
-        double angle = GetFiringAngle(targetX, targetY, STARTING_FIRING_SPEED);
+        double angle = GetFiringAngleInch(targetX, targetY, STARTING_FIRING_SPEED);
         if(minimumRange > angle) {
             while(minimumRange > angle) {
                 CurrentFiringSpeed /= 2; 
-                angle = GetFiringAngle(targetX, targetY, CurrentFiringSpeed);
+                angle = GetFiringAngleInch(targetX, targetY, CurrentFiringSpeed);
 
             }
 
