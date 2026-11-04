@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common;
 
 public class FireInfo {
-    double angle;
-    double speed;
+    public double launchAngle;
+    public double speed;
+    public Coordinate3D pointToLookAt;
 }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.commands.Commands.waitUntil;
+import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.race;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
@@ -31,14 +32,15 @@ public class BlueAudienceAuto {
         return Paths.curve(start, path1Control1, path1).linear(start, path1);
     }
     public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
-        Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
+        Command shootCommand = Command.build().setExecute(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
+        Command llTask = Command.build().setExecute(llSystem::Detect).setDone(()->{return false;});
 
-        return sequential(
+        return race(llTask, sequential(
                 // shoot
                 race(sequential(waitUntil(() -> {return llSystem.IsHiveUp(HiveType.BLUE_AUDIENCE);}), shootCommand), waitMs(20000)),
                 follow(follower, path1())
-        );
+        ));
     }
 }

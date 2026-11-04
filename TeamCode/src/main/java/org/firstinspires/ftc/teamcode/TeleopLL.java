@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -39,10 +38,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.common.Ballistics;
 import org.firstinspires.ftc.teamcode.common.Coordinate3D;
+import org.firstinspires.ftc.teamcode.common.FireInfo;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
@@ -62,7 +60,7 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
  */
 
 @TeleOp
-public class IntakeTest extends LinearOpMode {
+public class TeleopLL extends LinearOpMode {
     final double MAX_DRIVE_POWER = 1.0;
 
     public String HiveTypeToString(HiveType hType)
@@ -79,7 +77,7 @@ public class IntakeTest extends LinearOpMode {
 
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
-        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
+//        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -87,7 +85,7 @@ public class IntakeTest extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-        LLSystem llSystem = new LLSystem(lime_light);
+//        LLSystem llSystem = new LLSystem(lime_light);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
         //PDController pdController = new PDController(15.0, 1.0);
@@ -97,7 +95,7 @@ public class IntakeTest extends LinearOpMode {
         boolean isIntaking = false;
         boolean isTracking = false;
 
-        double intakeMotorSpeed = 0.2;
+        double intakeMotorSpeed = 1;
 
         double timeSinceUpdate = 0;
         Shooter shooter = new Shooter();
@@ -189,22 +187,24 @@ public class IntakeTest extends LinearOpMode {
             }
 
 
-            llSystem.Detect();
-            HiveType hType = llSystem.GetClosestHive();
-            Coordinate3D targetPos = new Coordinate3D(0,0,0);
-            boolean isDetected = hType != null;
-            if (isDetected) {
-                targetPos = llSystem.GetHive(hType).CalculatePos();
-            }
+//            llSystem.Detect();
+//            HiveType hType = llSystem.GetClosestHive();
+//            Coordinate3D targetPos = new Coordinate3D(0,0,0);
+//            boolean isDetected = hType != null;
+//            if (isDetected) {
+//                targetPos = llSystem.GetHive(hType).CalculatePos();
+//            }
 
-            if (isTracking && isDetected)
-            {
-                double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
+//            if (isTracking && isDetected)
+//            {
+//                double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
                 // target angle 0 (directly forward)
                 // pdController.Calculate gives degrees/second the robot should be turning
-                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
-                shooter.UpdateFiring(targetPos.z, targetPos.y);
-            }
+//                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
+//                Coordinate3D velocity = new Coordinate3D(0,0,0);
+//                FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_SPEED);
+//                shooter.UpdateFiring(info);
+//            }
 
 
 
@@ -214,14 +214,14 @@ public class IntakeTest extends LinearOpMode {
             telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
             telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
             if (isTracking) {
-                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
-                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
+//                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
+//                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
 
 
                 telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());
                 telemetry.addData("Shooter", "Y-Offset = " + shooter.getYOffset());
                 telemetry.addData("Shooter", "Gear Ratio = " + shooter.getRatio());
-                telemetry.addData("Shooter", "Fire Speed = " + shooter.getFireSpeed());
+                telemetry.addData("Shooter", "Fire Speed = " + shooter.getFireSpeedOffset());
                 telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
 
             }

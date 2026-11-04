@@ -36,11 +36,12 @@ public class RedFieldAuto {
         Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
+        Command llTask = Command.build().setExecute(llSystem::Detect).setDone(()->{return false;});
 
-        return sequential(
+        return race(llTask, sequential(
                 // shoot
                 race(sequential(waitUntil(() -> {return llSystem.IsHiveUp(HiveType.RED_FIELD);}), shootCommand), waitMs(20000)),
                 follow(follower, path1())
-        );
+        ));
     }
 }
