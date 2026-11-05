@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.common.HiveType;
 
 public class Shooter {
     public static final double FIRE_SPEED = 4;
-
+ public static final double FIRE_ANGLE = 83.56;
     final double WHEEL_CIRCUMFERENCE = 0.096 * Math.PI;
     double FIRE_MOTOR_SPEED_OFFSET = 1000;
     double SHOOT_TIME = 3.0; // run shoot for 3 seconds

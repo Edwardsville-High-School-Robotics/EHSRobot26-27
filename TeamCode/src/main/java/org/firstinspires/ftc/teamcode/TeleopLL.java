@@ -77,7 +77,7 @@ public class TeleopLL extends LinearOpMode {
 
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
-//        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
+       Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -85,10 +85,10 @@ public class TeleopLL extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-//        LLSystem llSystem = new LLSystem(lime_light);
+       LLSystem llSystem = new LLSystem(lime_light);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
-        //PDController pdController = new PDController(15.0, 1.0);
+        // PDController pdController = new PDController(15.0, 1.0);
         PIDController pdController = new PIDController(20.0, 0.05, 0.0);
         waitForStart();
 
@@ -187,24 +187,24 @@ public class TeleopLL extends LinearOpMode {
             }
 
 
-//            llSystem.Detect();
-//            HiveType hType = llSystem.GetClosestHive();
-//            Coordinate3D targetPos = new Coordinate3D(0,0,0);
-//            boolean isDetected = hType != null;
-//            if (isDetected) {
-//                targetPos = llSystem.GetHive(hType).CalculatePos();
-//            }
+           llSystem.Detect();
+           HiveType hType = llSystem.GetClosestHive();
+           Coordinate3D targetPos = new Coordinate3D(0,0,0);
+           boolean isDetected = hType != null;
+           if (isDetected) {
+               targetPos = llSystem.GetHive(hType).CalculatePos();
+           }
 
-//            if (isTracking && isDetected)
-//            {
-//                double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
+           if (isTracking && isDetected)
+           {
+               double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
                 // target angle 0 (directly forward)
                 // pdController.Calculate gives degrees/second the robot should be turning
-//                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
-//                Coordinate3D velocity = new Coordinate3D(0,0,0);
-//                FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_SPEED);
-//                shooter.UpdateFiring(info);
-//            }
+               rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
+               Coordinate3D velocity = new Coordinate3D(0,0,0);
+               FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
+               shooter.UpdateFiring(info);
+           }
 
 
 
