@@ -26,9 +26,9 @@ public class Ballistics {
         relativePos.y += Shooter.LL_OFFSET.y + Shooter.getYOffset();
         relativePos.z += Shooter.LL_OFFSET.z + Shooter.getZOffset();
 
-        double speed = Math.sqrt(
-                9.8 * relativePos.z / (Math.sin(2 * firingAngle) - 19.6 * relativePos.y / Math.pow(firingSpeed, 2)));
-        return speed;
+        double tx = relativePos.z;
+        double ty = relativePos.y;
+        return Math.sqrt(24.01*tx*tx + 4.9*ty*tx*tx/Math.sqrt(8.86*tx-ty)+ 2.71*ty*ty*tx - 24.01*ty*tx*tx);
     }
 
     public static double GetFiringAngleInch(Coordinate3D goalPos, double roboHeading, double firingSpeed) {
@@ -106,7 +106,7 @@ public class Ballistics {
         velocity.y /= 39.3700787402;
         velocity.z /= 39.3700787402;
 
-        return GetFireInfoVelocity(goalPos, velocity, roboHeading, firingSpeed);
+        return GetFireInfoVelocity(goalPos, velocity, roboHeading, firingAngle);
     }
 
 }
