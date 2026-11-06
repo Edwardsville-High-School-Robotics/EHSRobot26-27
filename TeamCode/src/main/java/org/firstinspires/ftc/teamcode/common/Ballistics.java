@@ -16,7 +16,7 @@ public class Ballistics {
         relativePos.z += Shooter.LL_OFFSET.z + Shooter.getZOffset();
 
         double discriminant = Math.pow(firingSpeed, 4) - 19.6 * Math.pow(firingSpeed, 2) * relativePos.y
-                - 96.04 * Math.pow(relativePos.y, 2);
+                - 96.04 * Math.pow(relativePos.z, 2);
         double answer = (Math.pow(firingSpeed, 2) - Math.sqrt(discriminant)) / (9.8 * relativePos.z);
         return Math.atan(answer);
     }

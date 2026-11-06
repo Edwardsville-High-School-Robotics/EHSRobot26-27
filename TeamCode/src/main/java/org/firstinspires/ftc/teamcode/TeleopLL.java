@@ -78,7 +78,7 @@ public class TeleopLL extends LinearOpMode {
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
         DcMotorEx pollenShooterMotor = hardwareMap.get(DcMotorEx.class, "pollen_shooter");
-       Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
+//       Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         pollenShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -139,12 +139,12 @@ public class TeleopLL extends LinearOpMode {
             if (gamepad1.dpadLeftWasPressed())
             {
                 //shooter.UpdateFireRate(-100);
-                pollenMotorSpeed -= 0.1;
+                pollenMotorSpeed -= 0.01;
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                pollenMotorSpeed += 0.1;
+                pollenMotorSpeed += 0.01;
             }
 /*
             if (gamepad1.leftBumperWasPressed())
@@ -167,11 +167,11 @@ public class TeleopLL extends LinearOpMode {
             }
 */
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
-            pollenMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
+            pollenMotorSpeed = Range.clip(pollenMotorSpeed, -1, 1);
 
             if (isIntaking)
             {
-                intakeMotor.setPower(intakeMotorSpeed);
+//                intakeMotor.setPower(intakeMotorSpeed);
             }
             else
             {
