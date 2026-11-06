@@ -123,11 +123,11 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.dpadUpWasPressed())
             {
-                intakeMotorSpeed += 0.1;
+                intakeMotorSpeed += 0.01;
             }
             if (gamepad1.dpadDownWasPressed())
             {
-                intakeMotorSpeed -= 0.1;
+                intakeMotorSpeed -= 0.01;
             }
 
             if (gamepad1.dpadLeftWasPressed())
@@ -225,6 +225,7 @@ public class TeleopLL extends LinearOpMode {
                 telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
 
             }
+            telemetry.addData("Intake", "Intake = " + intakeMotorSpeed);
             telemetry.update();
         }
     }
