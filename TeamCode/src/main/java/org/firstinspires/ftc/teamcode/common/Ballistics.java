@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import static java.lang.Math.tan;
+
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class Ballistics {
@@ -25,10 +27,10 @@ public class Ballistics {
         relativePos.x += Shooter.LL_OFFSET.x;
         relativePos.y += Shooter.LL_OFFSET.y + Shooter.getYOffset();
         relativePos.z += Shooter.LL_OFFSET.z + Shooter.getZOffset();
-
+        double A = firingAngle * Math.PI/180;
         double tx = relativePos.z;
         double ty = relativePos.y;
-        return Math.sqrt(24.01*tx*tx + 4.9*ty*tx*tx/Math.sqrt(8.86*tx-ty)+ 2.71*ty*ty*tx - 24.01*ty*tx*tx);
+        return Math.sqrt(24.01*tx*tx + 4.9*ty*tx*tx/Math.sqrt(tan(A)*tx-ty)+ 24.01*ty*ty*tx/tan(A) - 24.01*ty*tx*tx);
     }
 
     public static double GetFiringAngleInch(Coordinate3D goalPos, double roboHeading, double firingSpeed) {

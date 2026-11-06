@@ -79,13 +79,13 @@ public class TeleopLL extends LinearOpMode {
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
-        intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-       LLSystem llSystem = new LLSystem(lime_light);
+     //  LLSystem llSystem = new LLSystem(lime_light);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
         // PDController pdController = new PDController(15.0, 1.0);
@@ -98,7 +98,7 @@ public class TeleopLL extends LinearOpMode {
         double intakeMotorSpeed = 1;
 
         double timeSinceUpdate = 0;
-        Shooter shooter = new Shooter();
+     //   Shooter shooter = new Shooter();
 
         // a = intake
         // b = track
@@ -123,13 +123,13 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.dpadUpWasPressed())
             {
-                intakeMotorSpeed += 0.01;
+                intakeMotorSpeed += 0.1;
             }
             if (gamepad1.dpadDownWasPressed())
             {
-                intakeMotorSpeed -= 0.01;
+                intakeMotorSpeed -= 0.1;
             }
-
+/*
             if (gamepad1.dpadLeftWasPressed())
             {
                 shooter.UpdateFireRate(-100);
@@ -158,7 +158,7 @@ public class TeleopLL extends LinearOpMode {
             {
                 shooter.UpdateYOffset(0.25);
             }
-
+*/
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
 
             if (isIntaking)
@@ -173,7 +173,7 @@ public class TeleopLL extends LinearOpMode {
             if (gamepad1.leftStickButtonWasPressed()) {
                 mechWheels.SetIsLocal(!mechWheels.GetIsLocal()); // toggle is local
             }
-
+/*
             if (gamepad1.bWasPressed())
             {
                 isTracking = !isTracking;
@@ -205,27 +205,27 @@ public class TeleopLL extends LinearOpMode {
                FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
                shooter.UpdateFiring(info);
            }
-
+*/
 
 
             mechWheels.SetSpeed(x, y, rx);
 
             telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
-            telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
-            telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
+            //telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
+            //telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
             if (isTracking) {
 //                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
 //                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
 
-
+/*
                 telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());
                 telemetry.addData("Shooter", "Y-Offset = " + shooter.getYOffset());
                 telemetry.addData("Shooter", "Gear Ratio = " + shooter.getRatio());
                 telemetry.addData("Shooter", "Fire Speed = " + shooter.getFireSpeedOffset());
                 telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
-
+*/
             }
-            telemetry.addData("Intake", "Intake = " + intakeMotorSpeed);
+            telemetry.addData("Intake", "Intake Speed = " + intakeMotorSpeed);
             telemetry.update();
         }
     }
