@@ -68,9 +68,9 @@ public class Shooter {
     public void StartShooting()
     {
         isShooting = true;
-        shooterMotorSmall.setVelocity(calculateMotorSpeed(FIRE_SPEED));
+//        shooterMotorSmall.setVelocity(calculateMotorSpeed(FIRE_SPEED));
    
-        shooterMotorBig.setVelocity(calculateMotorSpeed(FIRE_SPEED));
+//        shooterMotorBig.setVelocity(calculateMotorSpeed(FIRE_SPEED));
         shooterTimer.reset();
     }
 
