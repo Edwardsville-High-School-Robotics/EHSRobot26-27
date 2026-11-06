@@ -77,9 +77,11 @@ public class TeleopLL extends LinearOpMode {
 
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
+        DcMotorEx pollenShooterMotor = hardwareMap.get(DcMotorEx.class, "pollen_shooter");
        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        pollenShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
@@ -93,9 +95,11 @@ public class TeleopLL extends LinearOpMode {
         waitForStart();
 
         boolean isIntaking = false;
+        boolean isShooting = false;
         boolean isTracking = false;
 
         double intakeMotorSpeed = 1;
+        double pollenMotorSpeed = 0.45;
 
         double timeSinceUpdate = 0;
      //   Shooter shooter = new Shooter();
@@ -120,7 +124,9 @@ public class TeleopLL extends LinearOpMode {
             if (gamepad1.aWasPressed()) {
                 isIntaking = !isIntaking;
             }
-
+            if (gamepad1.yWasPressed()) {
+                isShooting = !isShooting;
+            }
             if (gamepad1.dpadUpWasPressed())
             {
                 intakeMotorSpeed += 0.1;
@@ -129,17 +135,18 @@ public class TeleopLL extends LinearOpMode {
             {
                 intakeMotorSpeed -= 0.1;
             }
-/*
+
             if (gamepad1.dpadLeftWasPressed())
             {
-                shooter.UpdateFireRate(-100);
+                //shooter.UpdateFireRate(-100);
+                pollenMotorSpeed -= 0.1;
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                shooter.UpdateFireRate(100);
+                pollenMotorSpeed += 0.1;
             }
-
+/*
             if (gamepad1.leftBumperWasPressed())
             {
                 shooter.UpdateZOffset(-0.25);
@@ -160,6 +167,7 @@ public class TeleopLL extends LinearOpMode {
             }
 */
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
+            pollenMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
 
             if (isIntaking)
             {
@@ -168,6 +176,15 @@ public class TeleopLL extends LinearOpMode {
             else
             {
                 intakeMotor.setPower(0.0);
+            }
+
+            if (isShooting)
+            {
+                pollenShooterMotor.setPower(pollenMotorSpeed);
+            }
+            else
+            {
+                pollenShooterMotor.setPower(0.0);
             }
 
             if (gamepad1.leftStickButtonWasPressed()) {
@@ -226,6 +243,7 @@ public class TeleopLL extends LinearOpMode {
 */
             }
             telemetry.addData("Intake", "Intake Speed = " + intakeMotorSpeed);
+            telemetry.addData("Shooter", "Shooter Speed = " + pollenMotorSpeed);
             telemetry.update();
         }
     }
