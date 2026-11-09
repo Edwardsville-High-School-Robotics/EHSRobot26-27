@@ -35,11 +35,11 @@ public class BlueAudienceAuto {
         Command shootCommand = Command.build().setExecute(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
-        Command llTask = Command.build().setExecute(llSystem::Detect).setDone(()->{return false;});
+        Command llTask = Command.build();//.setExecute(llSystem::Detect).setDone(()->{return false;});
 
         return race(llTask, sequential(
                 // shoot
-                race(sequential(waitUntil(() -> {return llSystem.IsHiveUp(HiveType.BLUE_AUDIENCE);}), shootCommand), waitMs(20000)),
+//                race(sequential(waitUntil(() -> {return llSystem.IsHiveUp(HiveType.BLUE_AUDIENCE);}), shootCommand), waitMs(20000)),
                 follow(follower, path1())
         ));
     }
