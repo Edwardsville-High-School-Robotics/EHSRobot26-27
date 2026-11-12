@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.systems.LLSystem;
 
 public class Hive {
 
@@ -73,6 +74,7 @@ public class Hive {
             estimateFirePos.x += globalFireOffset.x + position.x;
             estimateFirePos.y += globalFireOffset.y + position.y;
             estimateFirePos.z += globalFireOffset.z + position.z;
+            estimateFirePos = Matrix.RotateCoord(estimateFirePos, -LLSystem.LL_Y_ANGLE_OFFSET, 0, 0);
         }
 
         estimateFirePos.x /= GetNumTags();

@@ -12,7 +12,9 @@ import java.util.List;
 
 public class LLSystem {
 
-    final double UP_THRESHOLD = 47;
+    final double UP_THRESHOLD = 47; // the height a hive has to be to considered up
+    public static final double LL_Y_ANGLE_OFFSET = 69; // limelight is angled up 69 degrees
+
     private Hive[] hives;
 
     private Limelight3A lime_light;
