@@ -26,12 +26,12 @@ public class AutoRunner extends LinearOpMode {
         boolean isRed = false;
         boolean isAudience = false;
 
-        Limelight3A limelight = null;//hardwareMap.get(Limelight3A.class, "limelight");
+        Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         Follower follower = Constants.create(hardwareMap);
         Shooter shooter = new Shooter();
         Feeder feeder = new Feeder();
-        LLSystem llsystem = null; //new LLSystem(limelight);
+        LLSystem llsystem = new LLSystem(limelight);
 
         while (!isStarted())
         {

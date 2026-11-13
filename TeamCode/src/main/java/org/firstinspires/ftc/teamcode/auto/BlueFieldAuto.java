@@ -31,10 +31,10 @@ public class BlueFieldAuto {
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
 
         return sequential(
-//                shootCommand,
-//                startFeeding,
+                //shootCommand,
+                //startFeeding,
                 follow(follower, feed1()),
-//                stopFeeding,
+                //stopFeeding,
                 follow(follower, park2())
         );
     }
