@@ -78,7 +78,7 @@ public class TeleopLL extends LinearOpMode {
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
         DcMotorEx pollenShooterMotor = hardwareMap.get(DcMotorEx.class, "pollen_shooter");
-//       Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
+        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         pollenShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -87,10 +87,9 @@ public class TeleopLL extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-     //  LLSystem llSystem = new LLSystem(lime_light);
+        LLSystem llSystem = new LLSystem(lime_light);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
-        // PDController pdController = new PDController(15.0, 1.0);
         PIDController pdController = new PIDController(20.0, 0.05, 0.0);
         waitForStart();
 
@@ -197,11 +196,12 @@ public class TeleopLL extends LinearOpMode {
             if (gamepad1.leftStickButtonWasPressed()) {
                 mechWheels.SetIsLocal(!mechWheels.GetIsLocal()); // toggle is local
             }
-/*
+
             if (gamepad1.bWasPressed())
             {
                 isTracking = !isTracking;
             }
+            /*
             if (gamepad1.yWasPressed())
             {
                 if (shooter.IsShooting())
@@ -209,7 +209,7 @@ public class TeleopLL extends LinearOpMode {
                 else
                     shooter.StartShooting();
             }
-
+*/
 
            llSystem.Detect();
            HiveType hType = llSystem.GetClosestHive();
@@ -227,19 +227,19 @@ public class TeleopLL extends LinearOpMode {
                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
                Coordinate3D velocity = new Coordinate3D(0,0,0);
                FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
-               shooter.UpdateFiring(info);
+               //shooter.UpdateFiring(info);
            }
-*/
+
 
 
             mechWheels.SetSpeed(x, y, rx);
 
             telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
             //telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
-            //telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
+            telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
             if (isTracking) {
-//                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
-//                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
+                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
+                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
 
 /*
                 telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());
