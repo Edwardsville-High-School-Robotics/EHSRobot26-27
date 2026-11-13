@@ -64,10 +64,10 @@ public class Hive {
 
         for (int i = 0; i < 4; i++)
         {
-//            aprilTags[i].
-            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
-            if (aprilTags[i] == null)
+          if (aprilTags[i] == null)
                 continue;
+            Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
+
             Coordinate3D offset = new Coordinate3D(xOffsets[i], yOffset, zOffset);
             Coordinate3D globalFireOffset = Matrix.RotateCoord(offset, aprilTags[i]);
             Position position = tagPose.getPosition();

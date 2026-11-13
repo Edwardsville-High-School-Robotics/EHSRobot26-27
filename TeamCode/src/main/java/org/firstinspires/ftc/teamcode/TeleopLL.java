@@ -87,7 +87,7 @@ public class TeleopLL extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-        LLSystem llSystem = new LLSystem(lime_light);
+        LLSystem llSystem = new LLSystem(lime_light, telemetry);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
         PIDController pdController = new PIDController(20.0, 0.05, 0.0);

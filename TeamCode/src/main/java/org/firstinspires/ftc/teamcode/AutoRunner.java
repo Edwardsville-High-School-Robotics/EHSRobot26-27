@@ -31,7 +31,7 @@ public class AutoRunner extends LinearOpMode {
         Follower follower = Constants.create(hardwareMap);
         Shooter shooter = new Shooter();
         Feeder feeder = new Feeder();
-        LLSystem llsystem = new LLSystem(limelight);
+        LLSystem llsystem = new LLSystem(limelight, telemetry);
 
         while (!isStarted())
         {

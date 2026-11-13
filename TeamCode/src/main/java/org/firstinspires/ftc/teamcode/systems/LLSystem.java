@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.Coordinate3D;
 import org.firstinspires.ftc.teamcode.common.Hive;
 import org.firstinspires.ftc.teamcode.common.HiveType;
@@ -18,16 +19,25 @@ public class LLSystem {
     private Hive[] hives;
 
     private Limelight3A lime_light;
-    long lastUpdate;
+    long lastUpdate, currUpdate;
 
-    public LLSystem(Limelight3A limelight)
+    Telemetry telemetry;
+
+    public LLSystem(Limelight3A limelight, Telemetry telemetry)
     {
+        this.telemetry = telemetry;
+
         if (!limelight.isRunning())
             limelight.start();
 
         this.lime_light = limelight;
         hives = new Hive[4];
+        for (int i = 0; i < hives.length; i++)
+        {
+            hives[i] = new Hive();
+        }
         lastUpdate = lime_light.getTimeSinceLastUpdate();
+        currUpdate = lastUpdate;
     }
 
     public boolean IsHiveUp(HiveType ht)
@@ -40,9 +50,12 @@ public class LLSystem {
     public void Detect()
     {
         // skip until new update
-        if (lime_light.getTimeSinceLastUpdate() <= lastUpdate)
+        telemetry.addData("LLSystem","Limelight lastupdate: " + (lastUpdate - lime_light.getTimeSinceLastUpdate()));
+        lastUpdate = currUpdate;
+        currUpdate = lime_light.getTimeSinceLastUpdate();
+        if (currUpdate <= lastUpdate)
             return;
-
+        telemetry.addData("Update!","Update!");
         LLResult result = lime_light.getLatestResult();
         if (!result.isValid())
             return;
@@ -52,6 +65,7 @@ public class LLSystem {
             hive.Clear();
 
         List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
+        telemetry.addData("LLSystem","Num tags seen: " + results.toArray().length);
 
         // add april tags to their hives
         for (LLResultTypes.FiducialResult tag : results) {
