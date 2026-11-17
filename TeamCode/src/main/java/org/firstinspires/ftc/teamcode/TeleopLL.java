@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -38,11 +39,15 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.common.Ballistics;
 import org.firstinspires.ftc.teamcode.common.Coordinate3D;
 import org.firstinspires.ftc.teamcode.common.FireInfo;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.pedro.Tuning;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
@@ -80,6 +85,14 @@ public class TeleopLL extends LinearOpMode {
         DcMotorEx pollenShooterMotor = hardwareMap.get(DcMotorEx.class, "pollen_shooter");
         Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
+        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint.setHeading(0, AngleUnit.DEGREES);
+        pinpoint.setOffsets(Constants.localizerConfig.xPodOffset.get(), Constants.localizerConfig.yPodOffset.get(), Constants.localizerConfig.offsetUnits.get());
+        pinpoint.setEncoderDirections(Constants.localizerConfig.xPodDirection.get(), Constants.localizerConfig.yPodDirection.get());
+
+
+
+
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         pollenShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -87,10 +100,10 @@ public class TeleopLL extends LinearOpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
-        LLSystem llSystem = new LLSystem(lime_light, telemetry);
+        LLSystem llSystem = new LLSystem(lime_light, pinpoint, telemetry);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
-        PIDController pdController = new PIDController(1.0, 0.0, 0.0);
+        PIDController pdController = new PIDController(4.0, 0.0, 0.03);
         waitForStart();
 
         boolean isIntaking = false;
@@ -113,9 +126,9 @@ public class TeleopLL extends LinearOpMode {
         // leftstick down = global/local toggle
         // rightstick down = invert intake
 
-
+        double tuningVal = 0.1;
         while (opModeIsActive()) {
-
+            pinpoint.update();
             double rx = -gamepad1.right_stick_x;
             double x = -gamepad1.left_stick_x;
             double y = gamepad1.left_stick_y;
@@ -129,22 +142,21 @@ public class TeleopLL extends LinearOpMode {
             }
             if (gamepad1.dpadUpWasPressed())
             {
-                intakeMotorSpeed += 0.1;
+                tuningVal *= 10;
             }
             if (gamepad1.dpadDownWasPressed())
             {
-                intakeMotorSpeed -= 0.1;
+                tuningVal /= 10;
             }
 
             if (gamepad1.dpadLeftWasPressed())
             {
-                //shooter.UpdateFireRate(-100);
-                pollenMotorSpeed -= 0.01;
+                pdController.SetI(pdController.GetI() - tuningVal);
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                pollenMotorSpeed += 0.01;
+                pdController.SetI(pdController.GetI() + tuningVal);
             }
 
             if (gamepad1.rightStickButtonWasPressed())
@@ -152,26 +164,25 @@ public class TeleopLL extends LinearOpMode {
                 intakeMotor.setDirection(intakeMotor.getDirection().inverted());
             }
 
-/*
+
             if (gamepad1.leftBumperWasPressed())
             {
-                shooter.UpdateZOffset(-0.25);
+                pdController.SetP(pdController.GetP() - tuningVal);
             }
-
-
             if (gamepad1.rightBumperWasPressed())
             {
-                shooter.UpdateZOffset(0.25);
+                pdController.SetP(pdController.GetP() + tuningVal);
             }
+
             if(gamepad1.leftTriggerWasPressed())
             {
-                shooter.UpdateYOffset(-0.25);
+                pdController.SetD(pdController.GetD() - tuningVal);
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                shooter.UpdateYOffset(0.25);
+                pdController.SetD(pdController.GetD() + tuningVal);
             }
-*/
+
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
             pollenMotorSpeed = Range.clip(pollenMotorSpeed, -1, 1);
 
@@ -215,19 +226,33 @@ public class TeleopLL extends LinearOpMode {
            HiveType hType = llSystem.GetClosestHive();
            Coordinate3D targetPos = new Coordinate3D(0,0,0);
            boolean isDetected = hType != null;
+           double robotHeading = pinpoint.getHeading(AngleUnit.DEGREES);
            if (isDetected) {
-               targetPos = llSystem.GetHive(hType).CalculatePos();
+               targetPos = llSystem.GetHive(hType).CalculatePos(robotHeading);
            }
 
            if (isTracking && isDetected)
            {
-               double angleX = Math.atan2(targetPos.x, targetPos.y) * 180 / Math.PI;
-                // target angle 0 (directly forward)
-                // pdController.Calculate gives degrees/second the robot should be turning
-               rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
-               Coordinate3D velocity = new Coordinate3D(0,0,0);
+               Coordinate3D velocity = new Coordinate3D(-pinpoint.getVelY(DistanceUnit.INCH), 0, pinpoint.getVelX(DistanceUnit.INCH));
                FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
+
+               double bearing = Math.toDegrees(Math.atan2(-info.pointToLookAt.x, info.pointToLookAt.z)); // field, CCW+
+               double error = AngleUnit.normalizeDegrees(bearing - robotHeading);
+               if (Double.isFinite(error)) {
+                   rx = Range.clip(pdController.Calculate(error, 0) / 360, -1, 1);
+               } else {
+                   rx = 0;
+                   pdController.Reset();
+               }
+//               double angleX = Math.atan2(info.pointToLookAt.x, info.pointToLookAt.z) * 180 / Math.PI;
+//                // target angle 0 (directly forward)
+//                // pdController.Calculate gives degrees/second the robot should be turning
+//               rx = pdController.Calculate(angleX, robotHeading) / 360; // divide by 360 to convert to motor power
+//               rx = Range.clip(rx, -1, 1);
                //shooter.UpdateFiring(info);
+           }
+           else if (isTracking) {
+               pdController.Reset();
            }
 
 
@@ -236,10 +261,15 @@ public class TeleopLL extends LinearOpMode {
 
             telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
             //telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
+            telemetry.addData("PID", "Tuning val: " + tuningVal);
+            telemetry.addData("PID", "P: " + pdController.GetP());
+            telemetry.addData("PID", "I: " + pdController.GetI());
+            telemetry.addData("PID", "D: " + pdController.GetD());
             telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
+            telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
+
             if (isTracking) {
                 telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
-                telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
                 telemetry.addData("LLSystem", "Rot Pow = " + rx);
 
 /*

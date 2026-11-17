@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.ftccommon.internal.manualcontrol.parameters.ImuParameters;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class MechanumWheels {
@@ -27,20 +28,18 @@ public class MechanumWheels {
         rightBack = map.get(DcMotorEx.class, "rightBack");
         rightFront = map.get(DcMotorEx.class, "rightFront");
 
+        imu.initialize(parameters);
+
 //        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        imu.initialize(parameters);
     }
 
     /*
      sets the robot speed using x, y, and rot (range from -1 to 1)
      */
-    public void SetSpeed(double x, double y, double rot)
-    {
+    public void SetSpeed(double x, double y, double rot) {
         double botHeading = 0;
-        if (isLocal)
-        {
+        if (isLocal) {
             botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         }
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);

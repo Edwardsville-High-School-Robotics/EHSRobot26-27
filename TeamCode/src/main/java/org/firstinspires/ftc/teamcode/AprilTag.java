@@ -64,7 +64,7 @@ public class AprilTag extends LinearOpMode {
                     continue;
                 }
 
-                Coordinate3D firePos = hives[selectedHive.ordinal()].CalculatePos();
+//                Coordinate3D firePos = hives[selectedHive.ordinal()].CalculatePos();
             }
         }
     }

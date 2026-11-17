@@ -61,7 +61,7 @@ public class Hive {
             aprilTags[i] = null;
     }
 
-    public Coordinate3D CalculatePos()
+    public Coordinate3D CalculatePos(double robotRotation)
     {
         Coordinate3D pose = new Coordinate3D(0,0,0);
 
@@ -93,6 +93,8 @@ public class Hive {
         pose.x /= GetNumTags();
         pose.y /= GetNumTags();
         pose.z /= GetNumTags();
+
+        pose = Matrix.RotateCoord(pose, 0, -robotRotation, 0);
 
         return pose;
     }

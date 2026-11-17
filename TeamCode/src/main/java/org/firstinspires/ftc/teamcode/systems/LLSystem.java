@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.Coordinate3D;
 import org.firstinspires.ftc.teamcode.common.Hive;
 import org.firstinspires.ftc.teamcode.common.HiveType;
@@ -18,14 +21,16 @@ public class LLSystem {
 
     private Hive[] hives;
 
+    private GoBildaPinpointDriver pinpoint;
     private Limelight3A lime_light;
     long lastUpdate, currUpdate;
 
     Telemetry telemetry;
 
-    public LLSystem(Limelight3A limelight, Telemetry telemetry)
+    public LLSystem(Limelight3A limelight, GoBildaPinpointDriver pinpoint, Telemetry telemetry)
     {
         this.telemetry = telemetry;
+        this.pinpoint = pinpoint;
 
         if (!limelight.isRunning())
             limelight.start();
@@ -39,40 +44,28 @@ public class LLSystem {
         lastUpdate = lime_light.getTimeSinceLastUpdate();
         currUpdate = lastUpdate;
     }
+    public double GetRotation()
+    {
+        return pinpoint.getHeading(AngleUnit.DEGREES);
+    }
 
     public boolean IsHiveUp(HiveType ht)
     {
         Hive h = hives[ht.ordinal()];
-        Coordinate3D coords = h.CalculatePos();
+        Coordinate3D coords = h.CalculatePos(pinpoint.getHeading(AngleUnit.DEGREES));
         return coords.y > UP_THRESHOLD;
     }
 
-    public void Detect()
-    {
-        // skip until new update
-        telemetry.addData("LLSystem","Limelight lastupdate: " + (lastUpdate - lime_light.getTimeSinceLastUpdate()));
-        lastUpdate = currUpdate;
-        currUpdate = lime_light.getTimeSinceLastUpdate();
-        if (currUpdate <= lastUpdate)
-            return;
-        telemetry.addData("Update!","Update!");
+    public void Detect() {
         LLResult result = lime_light.getLatestResult();
-        if (!result.isValid())
-            return;
+        for (Hive hive : hives) hive.Clear();
+        if (result == null || !result.isValid())
+            return;  // no fresh data: all hives empty, so isDetected becomes false
 
-        // on new loop, clear hives
-        for (Hive hive : hives)
-            hive.Clear();
-
-        List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
-        telemetry.addData("LLSystem","Num tags seen: " + results.toArray().length);
-
-        // add april tags to their hives
-        for (LLResultTypes.FiducialResult tag : results) {
+        for (LLResultTypes.FiducialResult tag : result.getFiducialResults()) {
             HiveType type = Hive.GetHiveType(tag.getFiducialId());
             hives[type.ordinal()].AddAprilTag(tag);
         }
-
     }
 
     public HiveType GetClosestHive()
@@ -81,11 +74,11 @@ public class LLSystem {
         HiveType h = null;
         for (int i=0; i<4; i++)
         {
-            Coordinate3D coord = hives[i].CalculatePos();
+            Coordinate3D coord = hives[i].CalculatePos(GetRotation());
             if (coord == null)
                 continue;
 
-            telemetry.addData("Hive: " + HiveType.values()[i].toString(), "Coord: " + coord.toString());
+//            telemetry.addData("Hive: " + HiveType.values()[i].toString(), "Coord: " + coord.toString());
 
             double dist = coord.Length();
             if (dist < closest)
@@ -93,7 +86,7 @@ public class LLSystem {
                 h = HiveType.values()[i];
                 closest = dist;
 
-                telemetry.addData("Closest Hive", "Closest: " + h.toString() + " Dist: " + dist);
+//                telemetry.addData("Closest Hive", "Closest: " + h.toString() + " Dist: " + dist);
             }
         }
 
