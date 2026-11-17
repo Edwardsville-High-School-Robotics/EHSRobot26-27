@@ -90,7 +90,7 @@ public class TeleopLL extends LinearOpMode {
         LLSystem llSystem = new LLSystem(lime_light, telemetry);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
-        PIDController pdController = new PIDController(20.0, 0.05, 0.0);
+        PIDController pdController = new PIDController(1.0, 0.0, 0.0);
         waitForStart();
 
         boolean isIntaking = false;
@@ -221,7 +221,7 @@ public class TeleopLL extends LinearOpMode {
 
            if (isTracking && isDetected)
            {
-               double angleX = Math.atan2(targetPos.x, targetPos.z) * 180 / Math.PI;
+               double angleX = Math.atan2(targetPos.x, targetPos.y) * 180 / Math.PI;
                 // target angle 0 (directly forward)
                 // pdController.Calculate gives degrees/second the robot should be turning
                rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
@@ -240,6 +240,7 @@ public class TeleopLL extends LinearOpMode {
             if (isTracking) {
                 telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
                 telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
+                telemetry.addData("LLSystem", "Rot Pow = " + rx);
 
 /*
                 telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());

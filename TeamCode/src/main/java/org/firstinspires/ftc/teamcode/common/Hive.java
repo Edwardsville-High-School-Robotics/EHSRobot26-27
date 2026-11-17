@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
@@ -11,14 +12,16 @@ public class Hive {
 
 
     // inches
+    // coordinates are (field x, field y, height)
+    // limelight convention is (leftright, -height, forward/back) for some reason
     final double[] xOffsets = {-6,-3,3,6};
-    final double yOffset = 5.5;
-    final double zOffset = 7.5;
+    final double zOffset = 5.5;
+    final double yOffset = -7.5;
 
     final int[] RED_FIELD = {30,31,32,33};
     final int[] RED_AUDIENCE = {34,35,36,37};
-    final int[] BLUE_FIELD = {38, 39, 40, 41};
-    final int[] BLUE_AUDIENCE = {42,43,44,45};
+    final int[] BLUE_AUDIENCE = {38, 39, 40, 41};
+    final int[] BLUE_FIELD = {42,43,44,45};
 
     private LLResultTypes.FiducialResult[] aprilTags;
     private int numTags;
@@ -42,6 +45,8 @@ public class Hive {
     {
         int id = tag.getFiducialId();
         aprilTags[GetIndex(id)] = tag;
+        numTags++;
+        assert numTags <= 4;
     }
 
     public int GetNumTags()
@@ -60,7 +65,6 @@ public class Hive {
     {
         Coordinate3D pose = new Coordinate3D(0,0,0);
 
-        Coordinate3D estimateFirePos = new Coordinate3D(0,0,0);
 
         for (int i = 0; i < 4; i++)
         {
@@ -68,20 +72,29 @@ public class Hive {
                 continue;
             Pose3D tagPose = aprilTags[i].getTargetPoseRobotSpace();
 
-            Coordinate3D offset = new Coordinate3D(xOffsets[i], yOffset, zOffset);
+            Coordinate3D offset = new Coordinate3D(-xOffsets[i], yOffset, zOffset);
             Coordinate3D globalFireOffset = Matrix.RotateCoord(offset, aprilTags[i]);
-            Position position = tagPose.getPosition();
-            estimateFirePos.x += globalFireOffset.x + position.x;
-            estimateFirePos.y += globalFireOffset.y + position.y;
-            estimateFirePos.z += globalFireOffset.z + position.z;
-            estimateFirePos = Matrix.RotateCoord(estimateFirePos, -LLSystem.LL_Y_ANGLE_OFFSET, 0, 0);
+            Position position = tagPose.getPosition().toUnit(DistanceUnit.INCH);
+            Coordinate3D estimateFirePos = new Coordinate3D(0,0,0);
+            estimateFirePos.x = globalFireOffset.x + position.x;
+            estimateFirePos.y = globalFireOffset.y + position.y;
+            estimateFirePos.z = globalFireOffset.z + position.z;
+//            estimateFirePos = Matrix.RotateCoord(estimateFirePos, -LLSystem.LL_Y_ANGLE_OFFSET, 0, 0);
+
+            pose.x += estimateFirePos.x;
+            pose.y += estimateFirePos.y;
+            pose.z += estimateFirePos.z;
         }
 
-        estimateFirePos.x /= GetNumTags();
-        estimateFirePos.y /= GetNumTags();
-        estimateFirePos.z /= GetNumTags();
+        if (GetNumTags() == 0)
+            return null;
 
-        return estimateFirePos;
+
+        pose.x /= GetNumTags();
+        pose.y /= GetNumTags();
+        pose.z /= GetNumTags();
+
+        return pose;
     }
 
 }

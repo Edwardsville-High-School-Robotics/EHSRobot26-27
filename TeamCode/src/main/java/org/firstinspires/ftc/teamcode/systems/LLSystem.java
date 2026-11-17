@@ -13,8 +13,8 @@ import java.util.List;
 
 public class LLSystem {
 
-    final double UP_THRESHOLD = 47; // the height a hive has to be to considered up
-    public static final double LL_Y_ANGLE_OFFSET = 69; // limelight is angled up 69 degrees
+    final double UP_THRESHOLD = 47; // the height a hive has to be considered up
+    public static final double LL_Y_ANGLE_OFFSET = 55; // limelight is angled up 55 degrees
 
     private Hive[] hives;
 
@@ -81,11 +81,19 @@ public class LLSystem {
         HiveType h = null;
         for (int i=0; i<4; i++)
         {
-            double dist = hives[i].CalculatePos().Length();
+            Coordinate3D coord = hives[i].CalculatePos();
+            if (coord == null)
+                continue;
+
+            telemetry.addData("Hive: " + HiveType.values()[i].toString(), "Coord: " + coord.toString());
+
+            double dist = coord.Length();
             if (dist < closest)
             {
                 h = HiveType.values()[i];
                 closest = dist;
+
+                telemetry.addData("Closest Hive", "Closest: " + h.toString() + " Dist: " + dist);
             }
         }
 
