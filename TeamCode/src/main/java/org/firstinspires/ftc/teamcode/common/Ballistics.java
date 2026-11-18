@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class Ballistics {
     static final double STARTING_FIRING_SPEED = 3.0;
+    public static double SPIN_K = 2;   // tune: start at 0, raise until long shots stop overshooting
 
     public static double GetFiringAngle(Coordinate3D goalPos, double roboHeading, double firingSpeed) {
 
@@ -28,12 +29,12 @@ public class Ballistics {
         rel.z += Shooter.LL_OFFSET.z + Shooter.getZOffset();
 
         double A = Math.toRadians(firingAngle);
+        double c = Math.cos(A);
         double d = Math.hypot(rel.x, rel.z);
         double h = rel.y;
-        double denom = d * Math.tan(A) - h;
-        if (denom <= 0) return Double.NaN;          // unreachable at this angle
-        double c = Math.cos(A);
-        return Math.sqrt(4.9 * d * d / (c * c * denom));
+        double denom = 2 * c * c * (d * Math.tan(A) - h) + SPIN_K * c * d * d;
+        if (denom <= 0) return Double.NaN;
+        return Math.sqrt(9.8 * d * d / denom);
     }
 
     public static double GetFiringAngleInch(Coordinate3D goalPos, double roboHeading, double firingSpeed) {
@@ -74,7 +75,7 @@ public class Ballistics {
     }
 
     public static FireInfo GetFireInfoVelocity(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle) {
-        double speed = GetLaunchSpeed(goalPos, roboHeading, firingAngle);
+        double speed = GetLaunchSpeed(goalPos, roboHeading, firingAngle) * Shooter.FIRE_MOTOR_SPEED_OFFSET;
         if (Double.isNaN(speed)) return null;
 
         double vy = Math.sin(Math.toRadians(firingAngle)) * speed;

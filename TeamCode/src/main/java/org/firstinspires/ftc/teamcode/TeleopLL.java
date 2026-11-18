@@ -82,7 +82,6 @@ public class TeleopLL extends LinearOpMode {
 
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
-        DcMotorEx pollenShooterMotor = hardwareMap.get(DcMotorEx.class, "pollen_shooter");
         Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
@@ -94,7 +93,6 @@ public class TeleopLL extends LinearOpMode {
 
 
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        pollenShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
@@ -114,7 +112,9 @@ public class TeleopLL extends LinearOpMode {
         double pollenMotorSpeed = 0.55;
 
         double timeSinceUpdate = 0;
-     //   Shooter shooter = new Shooter();
+        Shooter shooter = new Shooter(hardwareMap);
+
+        double xOffset = 0, yOffset = 0;
 
         // a = intake
         // b = track
@@ -137,9 +137,6 @@ public class TeleopLL extends LinearOpMode {
             if (gamepad1.aWasPressed()) {
                 isIntaking = !isIntaking;
             }
-            if (gamepad1.yWasPressed()) {
-                isShooting = !isShooting;
-            }
             if (gamepad1.dpadUpWasPressed())
             {
                 tuningVal *= 10;
@@ -151,12 +148,12 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.dpadLeftWasPressed())
             {
-                pdController.SetI(pdController.GetI() - tuningVal);
+                yOffset -= tuningVal;
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                pdController.SetI(pdController.GetI() + tuningVal);
+                yOffset += tuningVal;
             }
 
             if (gamepad1.rightStickButtonWasPressed())
@@ -167,20 +164,20 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.leftBumperWasPressed())
             {
-                pdController.SetP(pdController.GetP() - tuningVal);
+                shooter.UpdateFireRateOffset(-tuningVal);
             }
             if (gamepad1.rightBumperWasPressed())
             {
-                pdController.SetP(pdController.GetP() + tuningVal);
+                shooter.UpdateFireRateOffset(tuningVal);
             }
 
             if(gamepad1.leftTriggerWasPressed())
             {
-                pdController.SetD(pdController.GetD() - tuningVal);
+                Ballistics.SPIN_K -= tuningVal;
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                pdController.SetD(pdController.GetD() + tuningVal);
+                Ballistics.SPIN_K += tuningVal;
             }
 
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
@@ -195,15 +192,6 @@ public class TeleopLL extends LinearOpMode {
                 intakeMotor.setPower(0.0);
             }
 
-            if (isShooting)
-            {
-                pollenShooterMotor.setPower(pollenMotorSpeed);
-            }
-            else
-            {
-                pollenShooterMotor.setPower(0.0);
-            }
-
             if (gamepad1.leftStickButtonWasPressed()) {
                 mechWheels.SetIsLocal(!mechWheels.GetIsLocal()); // toggle is local
             }
@@ -212,7 +200,7 @@ public class TeleopLL extends LinearOpMode {
             {
                 isTracking = !isTracking;
             }
-            /*
+
             if (gamepad1.yWasPressed())
             {
                 if (shooter.IsShooting())
@@ -220,7 +208,7 @@ public class TeleopLL extends LinearOpMode {
                 else
                     shooter.StartShooting();
             }
-*/
+
 
            llSystem.Detect();
            HiveType hType = llSystem.GetClosestHive();
@@ -230,26 +218,28 @@ public class TeleopLL extends LinearOpMode {
            if (isDetected) {
                targetPos = llSystem.GetHive(hType).CalculatePos(robotHeading);
            }
-
+            FireInfo info = null;
            if (isTracking && isDetected)
            {
                Coordinate3D velocity = new Coordinate3D(-pinpoint.getVelY(DistanceUnit.INCH), 0, pinpoint.getVelX(DistanceUnit.INCH));
-               FireInfo info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
-
-               double bearing = Math.toDegrees(Math.atan2(-info.pointToLookAt.x, info.pointToLookAt.z)); // field, CCW+
-               double error = AngleUnit.normalizeDegrees(bearing - robotHeading);
-               if (Double.isFinite(error)) {
-                   rx = Range.clip(pdController.Calculate(error, 0) / 360, -1, 1);
-               } else {
-                   rx = 0;
-                   pdController.Reset();
-               }
+               info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
+               if (info != null) {
+                   info.pointToLookAt = new Coordinate3D(info.pointToLookAt.x + yOffset, info.pointToLookAt.y, info.pointToLookAt.z + xOffset);
+                   double bearing = Math.toDegrees(Math.atan2(-info.pointToLookAt.x, info.pointToLookAt.z)); // field, CCW+
+                   double error = AngleUnit.normalizeDegrees(bearing - robotHeading);
+                   if (Double.isFinite(error)) {
+                       rx = Range.clip(pdController.Calculate(error, 0) / 360, -1, 1);
+                   } else {
+                       rx = 0;
+                       pdController.Reset();
+                   }
 //               double angleX = Math.atan2(info.pointToLookAt.x, info.pointToLookAt.z) * 180 / Math.PI;
 //                // target angle 0 (directly forward)
 //                // pdController.Calculate gives degrees/second the robot should be turning
 //               rx = pdController.Calculate(angleX, robotHeading) / 360; // divide by 360 to convert to motor power
 //               rx = Range.clip(rx, -1, 1);
-               //shooter.UpdateFiring(info);
+                   shooter.UpdateFiring(info);
+               }
            }
            else if (isTracking) {
                pdController.Reset();
@@ -260,11 +250,11 @@ public class TeleopLL extends LinearOpMode {
             mechWheels.SetSpeed(x, y, rx);
 
             telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
-            //telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
+            telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
             telemetry.addData("PID", "Tuning val: " + tuningVal);
-            telemetry.addData("PID", "P: " + pdController.GetP());
-            telemetry.addData("PID", "I: " + pdController.GetI());
-            telemetry.addData("PID", "D: " + pdController.GetD());
+//            telemetry.addData("PID", "P: " + pdController.GetP());
+//            telemetry.addData("PID", "I: " + pdController.GetI());
+//            telemetry.addData("PID", "D: " + pdController.GetD());
             telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
             telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
 
@@ -272,13 +262,15 @@ public class TeleopLL extends LinearOpMode {
                 telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
                 telemetry.addData("LLSystem", "Rot Pow = " + rx);
 
-/*
-                telemetry.addData("Shooter", "Z-Offset = " + shooter.getZOffset());
-                telemetry.addData("Shooter", "Y-Offset = " + shooter.getYOffset());
+                telemetry.addData("Shooter", "X-Offset = " + xOffset);
+                telemetry.addData("Shooter", "Y-Offset = " + yOffset);
                 telemetry.addData("Shooter", "Gear Ratio = " + shooter.getRatio());
-                telemetry.addData("Shooter", "Fire Speed = " + shooter.getFireSpeedOffset());
+                telemetry.addData("Shooter", "Fire Rate Offset = " + shooter.getFireSpeedOffset());
+                telemetry.addData("Ballistics", "SPIN_K = " + Ballistics.SPIN_K);
+                if (info != null)
+                    telemetry.addData("Shooter", "Calculated Speed = " + shooter.calculateMotorSpeed(info.speed / 39.3700787402));
                 telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
-*/
+
             }
             telemetry.addData("Intake", "Intake Speed = " + intakeMotorSpeed);
             telemetry.addData("Shooter", "Shooter Speed = " + pollenMotorSpeed);

@@ -63,6 +63,8 @@ public class LLSystem {
             return;  // no fresh data: all hives empty, so isDetected becomes false
 
         for (LLResultTypes.FiducialResult tag : result.getFiducialResults()) {
+            if (tag.getFiducialId() < 30 || tag.getFiducialId() > 45)
+                continue;
             HiveType type = Hive.GetHiveType(tag.getFiducialId());
             hives[type.ordinal()].AddAprilTag(tag);
         }

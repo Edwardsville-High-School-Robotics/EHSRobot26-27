@@ -31,7 +31,7 @@ public class AutoRunner extends LinearOpMode {
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         
         Follower follower = Constants.create(hardwareMap);
-        Shooter shooter = new Shooter();
+        Shooter shooter = new Shooter(hardwareMap);
         Feeder feeder = new Feeder();
         LLSystem llsystem = new LLSystem(limelight, pinpoint, telemetry);
 
