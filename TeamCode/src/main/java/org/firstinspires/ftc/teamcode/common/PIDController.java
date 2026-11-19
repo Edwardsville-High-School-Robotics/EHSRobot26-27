@@ -66,4 +66,10 @@ public class PIDController {
 
         return p * (error + i * area + slope * d) + c;
     }
+
+    public void Reset() {
+        area = 0;
+        prev = 0;
+        timer.reset();
+    }
 }

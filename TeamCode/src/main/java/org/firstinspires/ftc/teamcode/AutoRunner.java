@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.auto.BlueAudienceAuto;
 import org.firstinspires.ftc.teamcode.auto.BlueFieldAuto;
@@ -15,6 +18,7 @@ import org.firstinspires.ftc.teamcode.systems.Feeder;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
+@Autonomous
 public class AutoRunner extends LinearOpMode {
 
     @Override
@@ -24,11 +28,12 @@ public class AutoRunner extends LinearOpMode {
         boolean isAudience = false;
 
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
-
+        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        
         Follower follower = Constants.create(hardwareMap);
-        Shooter shooter = new Shooter();
+        Shooter shooter = new Shooter(hardwareMap);
         Feeder feeder = new Feeder();
-        LLSystem llsystem = new LLSystem(limelight);
+        LLSystem llsystem = new LLSystem(limelight, pinpoint, telemetry);
 
         while (!isStarted())
         {

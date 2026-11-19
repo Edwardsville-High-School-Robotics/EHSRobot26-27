@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.pedropathing.utils.Timer;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -14,9 +16,9 @@ import org.firstinspires.ftc.teamcode.common.HiveType;
 
 public class Shooter {
     public static final double FIRE_SPEED = 4;
- public static final double FIRE_ANGLE = 83.56;
+    public static final double FIRE_ANGLE = 83.56;
     final double WHEEL_CIRCUMFERENCE = 0.096 * Math.PI;
-    double FIRE_MOTOR_SPEED_OFFSET = 1000;
+    public static double FIRE_MOTOR_SPEED_OFFSET = 1.13;
     double SHOOT_TIME = 3.0; // run shoot for 3 seconds
 
     private boolean isShooting;
@@ -39,8 +41,12 @@ public class Shooter {
 
     public static final Coordinate3D LL_OFFSET = new Coordinate3D(0,0,0); // offset of the shooter from the camera's position
 
-    public Shooter()
+    public Shooter(HardwareMap map)
     {
+        shooterMotorSmall = map.get(DcMotorEx.class, "pollen_shooter");
+        shooterMotorSmall.setDirection(DcMotorSimple.Direction.REVERSE);
+        isShooting = false;
+        shooterTimer = new Timer();
     }
 
 //    private double GetAngle(Pose2D currentPos, HiveType target, double offsetX, double offsetY)
@@ -68,9 +74,6 @@ public class Shooter {
     public void StartShooting()
     {
         isShooting = true;
-        shooterMotorSmall.setVelocity(calculateMotorSpeed(FIRE_SPEED));
-   
-        shooterMotorBig.setVelocity(calculateMotorSpeed(FIRE_SPEED));
         shooterTimer.reset();
     }
 
@@ -78,9 +81,9 @@ public class Shooter {
     {
         isShooting = false;
         shooterMotorSmall.setVelocity(0);
-        shooterMotorBig.setVelocity(0);
+//        shooterMotorBig.setVelocity(0);
     }
-    public void UpdateFireRate(double fireRate)
+    public void UpdateFireRateOffset(double fireRate)
     {
         FIRE_MOTOR_SPEED_OFFSET += fireRate;
     }
@@ -111,7 +114,7 @@ public class Shooter {
     // calculated the motor speed (deg/s) required to shoot a ball at the desired velocity (m/s)
     public double calculateMotorSpeed(double fireSpeed)
     {
-        return 360 * fireSpeed / WHEEL_CIRCUMFERENCE + FIRE_MOTOR_SPEED_OFFSET;
+        return 360 * fireSpeed / WHEEL_CIRCUMFERENCE;
     }
 
     public static void UpdateZOffset(double zoff){
@@ -123,13 +126,13 @@ public class Shooter {
 
     public void UpdateFiring(FireInfo info)
     {
-//        if (isShooting) {
-//            angle = info.launchAngle;
+        if (isShooting) {
+            angle = info.launchAngle;
 //            shooterServoBig.setPosition(angle * R);
 //            shooterServoSmall.setPosition(angle * R);
-//            shooterMotorSmall.setVelocity(calculateMotorSpeed(FIRE_SPEED));
+            shooterMotorSmall.setVelocity(calculateMotorSpeed(info.speed / 39.3700787402), AngleUnit.DEGREES);
 //            shooterMotorBig.setVelocity(calculateMotorSpeed(FIRE_SPEED));
-//        }
+        }
     }
 
 }

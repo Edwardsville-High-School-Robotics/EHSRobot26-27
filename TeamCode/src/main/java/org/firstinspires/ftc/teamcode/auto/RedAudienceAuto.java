@@ -33,6 +33,9 @@ public class RedAudienceAuto {
     public static Path park2() {
         return Paths.line(point1, point3).reverseTangent();
     }
+//    public static Path park2() {
+//        return Paths.line(start, point3).reverseTangent();
+//    }
 
     public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llsystem) {
         Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
@@ -40,10 +43,10 @@ public class RedAudienceAuto {
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
 
         return sequential(
-                shootCommand,
-                startFeeding,
+                //shootCommand,
+                //startFeeding,
                 follow(follower, feed1()),
-                stopFeeding,
+                //stopFeeding,
                 follow(follower, park2())
         );
     }
