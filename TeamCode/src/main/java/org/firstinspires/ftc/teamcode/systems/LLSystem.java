@@ -73,6 +73,33 @@ public class LLSystem {
         }
     }
 
+    public Hive GetAllianceHive(boolean isRed)
+    {
+        if (isRed)
+        {
+            if (this.GetHive(HiveType.RED_FIELD).GetNumTags() > 0)
+            {
+                return this.GetHive(HiveType.RED_FIELD);
+            }
+            else if (this.GetHive(HiveType.RED_AUDIENCE).GetNumTags() > 0)
+            {
+                return this.GetHive(HiveType.RED_AUDIENCE);
+            }
+        }
+        else
+        {
+            if (this.GetHive(HiveType.BLUE_FIELD).GetNumTags() > 0)
+            {
+                return this.GetHive(HiveType.BLUE_FIELD);
+            }
+            else if (this.GetHive(HiveType.BLUE_AUDIENCE).GetNumTags() > 0)
+            {
+                return this.GetHive(HiveType.BLUE_AUDIENCE);
+            }
+        }
+        return null;
+    }
+
     public HiveType GetClosestHive()
     {
         double closest = 1000000; // big number

@@ -29,7 +29,7 @@ public class BlueAudienceAuto {
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
     public static final Pose start = poseFactory.of(80, 12, 90);
-    private static final Pose path1 = poseFactory.of(132, 24, 180);
+    private static final Pose path1 = poseFactory.of(125, 20, 180);
     private static final Pose path1Control1 = poseFactory.of(80, 34, 0);
 
     public static Path path1() {

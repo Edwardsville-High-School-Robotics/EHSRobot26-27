@@ -37,7 +37,7 @@ public class MechanumWheels {
      */
     public void SetSpeed(double x, double y, double rot) {
         double botHeading = 0;
-        if (isLocal) {
+        if (!isLocal) {
             botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         }
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);

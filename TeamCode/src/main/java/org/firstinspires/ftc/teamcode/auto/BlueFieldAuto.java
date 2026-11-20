@@ -23,27 +23,14 @@ import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class BlueFieldAuto {
-
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
-    public static final Pose start = poseFactory.of(84, 136, 270);
-    public static final Pose path1 = poseFactory.of(108, 136, 0);
-    public static final Pose path1Control1 = poseFactory.of(96, 120, 0);
-    public static final Pose point2 = poseFactory.of(135, 136, 0);
-    public static final Pose point3Start = poseFactory.of(135, 136, 0);
-    public static final Pose point3 = poseFactory.of(136, 51, 180);
-    public static final Pose point3Control1 = poseFactory.of(108, 94, 0);
+    public static final Pose start = poseFactory.of(82.3533, 132.9418, 270);
+    public static final Pose point1 = poseFactory.of(132.9418, 48.8828, 180);
+    public static final Pose point1Control1 = poseFactory.of(123.291, 98.7049, 0);
 
-    public static Path OrientToFeed() {
-        return Paths.curve(start, path1Control1, path1).linear(start, path1);
-    }
-
-    public static Path Feed() {
-        return Paths.line(path1, point2).tangent().with(Constants.foresightConfig.maxVelocityConstraint.at(6.0));
-    }
-
-    public static Path ToPark() {
-        return Paths.curve(point3Start, point3Control1, point3).linear(point3Start, point3);
+    public static Path path1() {
+        return Paths.curve(start, point1Control1, point1).linear(start, point1);
     }
     public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
         Command aim = shooter.GetCommand(follower, llSystem, HiveType.BLUE_FIELD);
@@ -57,11 +44,7 @@ public class BlueFieldAuto {
 
         return race(sequential(
                 shoot,
-                follow(follower, OrientToFeed()),
-                startFeeding,
-                follow(follower, Feed()),
-                stopFeeding,
-                follow(follower, ToPark())
+                follow(follower, path1())
         ), llTask);
     }
 }

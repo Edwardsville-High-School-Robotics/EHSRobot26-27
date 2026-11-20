@@ -24,7 +24,7 @@ public class Shooter {
     public static final double FIRE_ANGLE_NECTAR = 83.56; // 81.5
     final double WHEEL_CIRCUMFERENCE = 0.096 * Math.PI;
     public static double FIRE_MOTOR_SPEED_OFFSET = 1.29;
-    public static double MOTOR_SPEED_THRESHOLD = 0.85;
+    public static double MOTOR_SPEED_THRESHOLD = 0.9;
     double SHOOT_TIME = 3.0; // run shoot for 3 seconds
     private boolean isShooting;
     private Timer shooterTimer; // times how long we've been shooting

@@ -6,8 +6,8 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class Ballistics {
     static final double STARTING_FIRING_SPEED = 3.0;
-    public static double SPIN_K_POLLEN = 2;   // tune: start at 0, raise until long shots stop overshooting
-    public static double SPIN_K_NECTAR = 1.7;   // tune: start at 0, raise until long shots stop overshooting
+    public static double SPIN_K_POLLEN = 2.5;   // tune: start at 0, raise until long shots stop overshooting
+    public static double SPIN_K_NECTAR = 2.1;   // tune: start at 0, raise until long shots stop overshooting
 
     public static double GetFiringAngle(Coordinate3D goalPos, double roboHeading, double firingSpeed) {
 

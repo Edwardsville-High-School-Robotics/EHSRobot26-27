@@ -28,24 +28,12 @@ public class RedAudienceAuto {
 
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
-    public static Pose start = poseFactory.of(60, 8, 90);
-    public static final Pose path1 = poseFactory.of(36, 9, 180);
-    public static final Pose path1Control1 = poseFactory.of(48, 24, 0);
-    public static final Pose point2 = poseFactory.of(9, 9, 180);
-    public static final Pose point3Start = poseFactory.of(9, 9, 180);
-    public static final Pose point3 = poseFactory.of(8.2924, 92.9807, 0);
-    public static final Pose point3Control1 = poseFactory.of(35.9151, 49.3176, 0);
+    public static final Pose start = poseFactory.of(59.064, 8.7323, 90);
+    public static final Pose point1 = poseFactory.of(10.6143, 94.2851, 0);
+    public static final Pose point1Control1 = poseFactory.of(20.9593, 42.246, 0);
 
-    public static Path OrientToFeed() {
-        return Paths.curve(start, path1Control1, path1).linear(start, path1);
-    }
-
-    public static Path Feed() {
-        return Paths.line(path1, point2).tangent().with(Constants.foresightConfig.maxVelocityConstraint.at(6.0));
-    }
-
-    public static Path ToPark() {
-        return Paths.curve(point3Start, point3Control1, point3).linear(point3Start, point3);
+    public static Path path1() {
+        return Paths.curve(start, point1Control1, point1).linear(start, point1);
     }
 
     public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
@@ -60,11 +48,7 @@ public class RedAudienceAuto {
 
         return race(llTask,sequential(
                 shoot,
-                follow(follower, OrientToFeed()),
-                startFeeding,
-                follow(follower, Feed()),
-                stopFeeding,
-                follow(follower, ToPark())
+                follow(follower, path1())
         ));
     }
 }

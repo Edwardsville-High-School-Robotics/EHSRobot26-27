@@ -31,7 +31,7 @@ public class RedFieldAuto {
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
     public static final Pose start = poseFactory.of(61.1754, 133.8562, 270);
-    private static final Pose path1 = poseFactory.of(8.4805, 118.1985, 0);
+    private static final Pose path1 = poseFactory.of(19.4805, 120.1985, 0);
     private static final Pose path1Control1 = poseFactory.of(69.0922, 115.2381, 0);
     public static Path path1() {
         return Paths.curve(start, path1Control1, path1).linear(start, path1);

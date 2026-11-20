@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.auto.BlueAudienceAuto;
 import org.firstinspires.ftc.teamcode.auto.BlueFieldAuto;
 import org.firstinspires.ftc.teamcode.auto.RedAudienceAuto;
 import org.firstinspires.ftc.teamcode.auto.RedFieldAuto;
+import org.firstinspires.ftc.teamcode.common.Ballistics;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.systems.Feeder;
 import org.firstinspires.ftc.teamcode.systems.Flowerbar;
@@ -25,6 +26,7 @@ public class AutoRunner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        Ballistics.SPIN_K_POLLEN = 2.8;
 
         boolean isRed = false;
         boolean isAudience = false;

@@ -42,6 +42,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.common.Ballistics;
 import org.firstinspires.ftc.teamcode.common.Coordinate3D;
 import org.firstinspires.ftc.teamcode.common.FireInfo;
+import org.firstinspires.ftc.teamcode.common.Hive;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -66,6 +67,7 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 @TeleOp
 public class TeleopLL extends LinearOpMode {
+    private static final double YAW_TUNING_FACTOR = 0.1;
     final double MAX_DRIVE_POWER = 1.0;
 
     public String HiveTypeToString(HiveType hType)
@@ -79,6 +81,9 @@ public class TeleopLL extends LinearOpMode {
     public void runOpMode() {
         telemetry.addData("Status ", "Initialized");
         telemetry.update();
+
+        Ballistics.SPIN_K_POLLEN = 2.5;
+        Ballistics.SPIN_K_NECTAR = 2.1;
 
         Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -124,6 +129,9 @@ public class TeleopLL extends LinearOpMode {
         // rightstick down = invert intake
 
         double tuningVal = 0.1;
+
+        boolean isRedAlliance = true;
+
         while (opModeIsActive()) {
             pinpoint.update();
             double rx = -gamepad1.right_stick_x;
@@ -158,7 +166,10 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.rightStickButtonWasPressed())
             {
-                feeder.Reverse();
+                if (feeder.IsReverse())
+                    feeder.StopReverse();
+                else
+                    feeder.Reverse();
             }
 
 
@@ -206,15 +217,19 @@ public class TeleopLL extends LinearOpMode {
                 else
                     flowerbar.LowerArmbar();
             }
+            if (gamepad1.backWasPressed())
+            {
+                isRedAlliance = !isRedAlliance;
+            }
 
 
            llSystem.Detect();
-           HiveType hType = llSystem.GetClosestHive();
+           Hive targetHive = llSystem.GetAllianceHive(isRedAlliance);
            Coordinate3D targetPos = new Coordinate3D(0,0,0);
-           boolean isDetected = hType != null;
+           boolean isDetected = targetHive != null;
            double robotHeading = pinpoint.getHeading(AngleUnit.DEGREES);
            if (isDetected) {
-               targetPos = llSystem.GetHive(hType).CalculatePos(robotHeading);
+               targetPos = targetHive.CalculatePos(robotHeading);
            }
             FireInfo infoPollen = null, infoNectar = null;
            if (isTracking && isDetected)
@@ -225,7 +240,12 @@ public class TeleopLL extends LinearOpMode {
                if (infoPollen != null) {
                    infoPollen.pointToLookAt = new Coordinate3D(infoPollen.pointToLookAt.x + yOffset, infoPollen.pointToLookAt.y, infoPollen.pointToLookAt.z + xOffset);
                    double bearing = Math.toDegrees(Math.atan2(-infoPollen.pointToLookAt.x, infoPollen.pointToLookAt.z)); // field, CCW+
-                   double error = AngleUnit.normalizeDegrees(bearing - robotHeading);
+
+                   double direction = bearing - robotHeading;
+
+                   double offset = direction * YAW_TUNING_FACTOR;
+
+                   double error = AngleUnit.normalizeDegrees(bearing - robotHeading + offset);
                    if (Double.isFinite(error)) {
                        rx = Range.clip(pdController.Calculate(error, 0) / 360, -1, 1);
                    } else {
@@ -255,6 +275,7 @@ public class TeleopLL extends LinearOpMode {
 
             mechWheels.SetSpeed(x, y, rx);
 
+            telemetry.addData("Teleop", "Is Red Alliance = " + isRedAlliance);
             telemetry.addData("Mechanum Wheels", "Global Pos = " + (mechWheels.GetIsLocal() ? "on" : "off"));
             telemetry.addData("Shooter", "Shooting = " + (shooter.IsShooting() ? "yes" : "no"));
             telemetry.addData("PID", "Tuning val: " + tuningVal);
@@ -263,9 +284,7 @@ public class TeleopLL extends LinearOpMode {
 //            telemetry.addData("PID", "D: " + pdController.GetD());
             telemetry.addData("LLSystem", "Tracking = " + (isTracking ? "on" : "off"));
             telemetry.addData("LLSystem", "Hive Pos = " + targetPos.toString());
-
             if (isTracking) {
-                telemetry.addData("LLSystem", "Detected Hive = " + HiveTypeToString(hType));
                 telemetry.addData("LLSystem", "Rot Pow = " + rx);
 
                 telemetry.addData("Shooter", "X-Offset = " + xOffset);
