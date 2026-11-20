@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -99,4 +100,12 @@ public class Hive {
         return pose;
     }
 
+    public boolean IsUp(double heading)
+    {
+        Coordinate3D coords = CalculatePos(heading);
+            if (coords == null) {
+            return false;
+        }
+        return -coords.y + LLSystem.LL_HEIGHT > LLSystem.UP_THRESHOLD;
+    }
 }

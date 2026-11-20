@@ -34,8 +34,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
@@ -47,8 +45,10 @@ import org.firstinspires.ftc.teamcode.common.FireInfo;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
-import org.firstinspires.ftc.teamcode.pedro.Tuning;
+import org.firstinspires.ftc.teamcode.systems.Feeder;
+import org.firstinspires.ftc.teamcode.systems.Flowerbar;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
+import org.firstinspires.ftc.teamcode.systems.MechanumWheels;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 /*
@@ -80,8 +80,6 @@ public class TeleopLL extends LinearOpMode {
         telemetry.addData("Status ", "Initialized");
         telemetry.update();
 
-
-        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
         Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
@@ -89,20 +87,19 @@ public class TeleopLL extends LinearOpMode {
         pinpoint.setOffsets(Constants.localizerConfig.xPodOffset.get(), Constants.localizerConfig.yPodOffset.get(), Constants.localizerConfig.offsetUnits.get());
         pinpoint.setEncoderDirections(Constants.localizerConfig.xPodDirection.get(), Constants.localizerConfig.yPodDirection.get());
 
-
-
-
-        intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
 
         LLSystem llSystem = new LLSystem(lime_light, pinpoint, telemetry);
+        Flowerbar flowerbar = new Flowerbar(hardwareMap);
+        Feeder feeder = new Feeder(hardwareMap);
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
         PIDController pdController = new PIDController(4.0, 0.0, 0.03);
         waitForStart();
+
+        flowerbar.RaiseArmbar();
 
         boolean isIntaking = false;
         boolean isShooting = false;
@@ -135,7 +132,10 @@ public class TeleopLL extends LinearOpMode {
 
 
             if (gamepad1.aWasPressed()) {
-                isIntaking = !isIntaking;
+                if (feeder.IsFeeding())
+                    feeder.StopFeeding();
+                else
+                    feeder.StartFeeding();
             }
             if (gamepad1.dpadUpWasPressed())
             {
@@ -148,17 +148,17 @@ public class TeleopLL extends LinearOpMode {
 
             if (gamepad1.dpadLeftWasPressed())
             {
-                yOffset -= tuningVal;
+                Ballistics.SPIN_K_POLLEN -= tuningVal;
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                yOffset += tuningVal;
+                Ballistics.SPIN_K_POLLEN += tuningVal;
             }
 
             if (gamepad1.rightStickButtonWasPressed())
             {
-                intakeMotor.setDirection(intakeMotor.getDirection().inverted());
+                feeder.Reverse();
             }
 
 
@@ -173,24 +173,15 @@ public class TeleopLL extends LinearOpMode {
 
             if(gamepad1.leftTriggerWasPressed())
             {
-                Ballistics.SPIN_K -= tuningVal;
+                Ballistics.SPIN_K_NECTAR -= tuningVal;
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                Ballistics.SPIN_K += tuningVal;
+                Ballistics.SPIN_K_NECTAR += tuningVal;
             }
 
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
             pollenMotorSpeed = Range.clip(pollenMotorSpeed, -1, 1);
-
-            if (isIntaking)
-            {
-                intakeMotor.setPower(intakeMotorSpeed);
-            }
-            else
-            {
-                intakeMotor.setPower(0.0);
-            }
 
             if (gamepad1.leftStickButtonWasPressed()) {
                 mechWheels.SetIsLocal(!mechWheels.GetIsLocal()); // toggle is local
@@ -208,6 +199,13 @@ public class TeleopLL extends LinearOpMode {
                 else
                     shooter.StartShooting();
             }
+            if (gamepad1.xWasPressed())
+            {
+                if (flowerbar.IsLowered())
+                    flowerbar.RaiseArmbar();
+                else
+                    flowerbar.LowerArmbar();
+            }
 
 
            llSystem.Detect();
@@ -218,14 +216,15 @@ public class TeleopLL extends LinearOpMode {
            if (isDetected) {
                targetPos = llSystem.GetHive(hType).CalculatePos(robotHeading);
            }
-            FireInfo info = null;
+            FireInfo infoPollen = null, infoNectar = null;
            if (isTracking && isDetected)
            {
                Coordinate3D velocity = new Coordinate3D(-pinpoint.getVelY(DistanceUnit.INCH), 0, pinpoint.getVelX(DistanceUnit.INCH));
-               info = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE);
-               if (info != null) {
-                   info.pointToLookAt = new Coordinate3D(info.pointToLookAt.x + yOffset, info.pointToLookAt.y, info.pointToLookAt.z + xOffset);
-                   double bearing = Math.toDegrees(Math.atan2(-info.pointToLookAt.x, info.pointToLookAt.z)); // field, CCW+
+               infoPollen = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE_POLLEN, Ballistics.SPIN_K_POLLEN);
+               infoNectar = Ballistics.GetFireInfoWithVelocityInch(targetPos, velocity, 0, Shooter.FIRE_ANGLE_NECTAR, Ballistics.SPIN_K_NECTAR);
+               if (infoPollen != null) {
+                   infoPollen.pointToLookAt = new Coordinate3D(infoPollen.pointToLookAt.x + yOffset, infoPollen.pointToLookAt.y, infoPollen.pointToLookAt.z + xOffset);
+                   double bearing = Math.toDegrees(Math.atan2(-infoPollen.pointToLookAt.x, infoPollen.pointToLookAt.z)); // field, CCW+
                    double error = AngleUnit.normalizeDegrees(bearing - robotHeading);
                    if (Double.isFinite(error)) {
                        rx = Range.clip(pdController.Calculate(error, 0) / 360, -1, 1);
@@ -238,8 +237,15 @@ public class TeleopLL extends LinearOpMode {
 //                // pdController.Calculate gives degrees/second the robot should be turning
 //               rx = pdController.Calculate(angleX, robotHeading) / 360; // divide by 360 to convert to motor power
 //               rx = Range.clip(rx, -1, 1);
-                   shooter.UpdateFiring(info);
                }
+               if (infoNectar == null)
+               {
+                   telemetry.addData("Shooter", "Nectar is null");
+               }
+               else {
+                   telemetry.addData("Shooter", "Nectar valid");
+               }
+               shooter.UpdateFiring(infoPollen, infoNectar);
            }
            else if (isTracking) {
                pdController.Reset();
@@ -266,9 +272,13 @@ public class TeleopLL extends LinearOpMode {
                 telemetry.addData("Shooter", "Y-Offset = " + yOffset);
                 telemetry.addData("Shooter", "Gear Ratio = " + shooter.getRatio());
                 telemetry.addData("Shooter", "Fire Rate Offset = " + shooter.getFireSpeedOffset());
-                telemetry.addData("Ballistics", "SPIN_K = " + Ballistics.SPIN_K);
-                if (info != null)
-                    telemetry.addData("Shooter", "Calculated Speed = " + shooter.calculateMotorSpeed(info.speed / 39.3700787402));
+                telemetry.addData("Ballistics", "SPIN_K_POLLEN = " + Ballistics.SPIN_K_POLLEN);
+                telemetry.addData("Ballistics", "SPIN_K_NECTAR = " + Ballistics.SPIN_K_NECTAR);
+                if (infoPollen != null)
+                    telemetry.addData("Shooter", "Calculated Speed = " + shooter.calculateMotorSpeed(infoPollen.speed / 39.3700787402));
+                if (infoNectar != null)
+                    telemetry.addData("Shooter", "Calculated Speed = " + shooter.calculateMotorSpeed(infoNectar.speed / 39.3700787402));
+
                 telemetry.addData("Shooter", "Fire Angle = " + shooter.getAngle());
 
             }
@@ -276,5 +286,6 @@ public class TeleopLL extends LinearOpMode {
             telemetry.addData("Shooter", "Shooter Speed = " + pollenMotorSpeed);
             telemetry.update();
         }
+        flowerbar.Reset();
     }
 }

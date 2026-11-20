@@ -16,9 +16,9 @@ import java.util.List;
 
 public class LLSystem {
 
-    final double UP_THRESHOLD = 47; // the height a hive has to be considered up
+    public static final double UP_THRESHOLD = 47; // the height a hive has to be considered up
     public static final double LL_Y_ANGLE_OFFSET = 55; // limelight is angled up 55 degrees
-
+    public static final double LL_HEIGHT = 13;
     private Hive[] hives;
 
     private GoBildaPinpointDriver pinpoint;
@@ -51,18 +51,21 @@ public class LLSystem {
 
     public boolean IsHiveUp(HiveType ht)
     {
-        Hive h = hives[ht.ordinal()];
-        Coordinate3D coords = h.CalculatePos(pinpoint.getHeading(AngleUnit.DEGREES));
-        return coords.y > UP_THRESHOLD;
+        return hives[ht.ordinal()].IsUp(pinpoint.getHeading(AngleUnit.DEGREES));
     }
 
     public void Detect() {
         LLResult result = lime_light.getLatestResult();
         for (Hive hive : hives) hive.Clear();
-        if (result == null || !result.isValid())
+        if (result == null || !result.isValid()) {
+            telemetry.addData("LLSystem", "Invalid result = " + ((result == null) ? "null" : result.isValid()));
             return;  // no fresh data: all hives empty, so isDetected becomes false
+        }
 
-        for (LLResultTypes.FiducialResult tag : result.getFiducialResults()) {
+        List<LLResultTypes.FiducialResult> results = result.getFiducialResults();
+        telemetry.addData("LLSystem", "Num Tags = " + results.toArray().length);
+
+        for (LLResultTypes.FiducialResult tag : results) {
             if (tag.getFiducialId() < 30 || tag.getFiducialId() > 45)
                 continue;
             HiveType type = Hive.GetHiveType(tag.getFiducialId());

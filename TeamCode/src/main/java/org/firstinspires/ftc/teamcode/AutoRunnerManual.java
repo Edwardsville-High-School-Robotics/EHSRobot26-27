@@ -30,23 +30,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.utils.Timer;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.common.Ballistics;
-import org.firstinspires.ftc.teamcode.common.Coordinate3D;
-import org.firstinspires.ftc.teamcode.common.FireInfo;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.common.PIDController;
-import org.firstinspires.ftc.teamcode.systems.LLSystem;
-import org.firstinspires.ftc.teamcode.systems.Shooter;
+import org.firstinspires.ftc.teamcode.systems.MechanumWheels;
 
 /*
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either

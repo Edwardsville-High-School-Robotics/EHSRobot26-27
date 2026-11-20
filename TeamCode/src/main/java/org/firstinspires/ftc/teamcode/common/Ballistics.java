@@ -6,7 +6,8 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class Ballistics {
     static final double STARTING_FIRING_SPEED = 3.0;
-    public static double SPIN_K = 2;   // tune: start at 0, raise until long shots stop overshooting
+    public static double SPIN_K_POLLEN = 2;   // tune: start at 0, raise until long shots stop overshooting
+    public static double SPIN_K_NECTAR = 1.7;   // tune: start at 0, raise until long shots stop overshooting
 
     public static double GetFiringAngle(Coordinate3D goalPos, double roboHeading, double firingSpeed) {
 
@@ -16,13 +17,14 @@ public class Ballistics {
         relativePos.y += Shooter.LL_OFFSET.y + Shooter.getYOffset();
         relativePos.z += Shooter.LL_OFFSET.z + Shooter.getZOffset();
 
+        double df = 9.8;
         double discriminant = Math.pow(firingSpeed, 4) - 19.6 * Math.pow(firingSpeed, 2) * relativePos.y
                 - 96.04 * Math.pow(relativePos.z, 2);
         double answer = (Math.pow(firingSpeed, 2) - Math.sqrt(discriminant)) / (9.8 * relativePos.z);
         return Math.atan(answer);
     }
 
-    public static double GetLaunchSpeed(Coordinate3D goalPos, double roboHeading, double firingAngle) {
+    public static double GetLaunchSpeed(Coordinate3D goalPos, double roboHeading, double firingAngle, double spin_k) {
         Coordinate3D rel = Matrix.RotateCoord(goalPos, 0, roboHeading, 0);
         rel.x += Shooter.LL_OFFSET.x;
         rel.y += Shooter.LL_OFFSET.y + Shooter.getYOffset();
@@ -32,7 +34,7 @@ public class Ballistics {
         double c = Math.cos(A);
         double d = Math.hypot(rel.x, rel.z);
         double h = rel.y;
-        double denom = 2 * c * c * (d * Math.tan(A) - h) + SPIN_K * c * d * d;
+        double denom = 2 * c * c * (d * Math.tan(A) - h) + spin_k * c * d * d;
         if (denom <= 0) return Double.NaN;
         return Math.sqrt(9.8 * d * d / denom);
     }
@@ -74,8 +76,8 @@ public class Ballistics {
         return new double[]{ -time * velocityX, -time * velocityZ };
     }
 
-    public static FireInfo GetFireInfoVelocity(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle) {
-        double speed = GetLaunchSpeed(goalPos, roboHeading, firingAngle) * Shooter.FIRE_MOTOR_SPEED_OFFSET;
+    public static FireInfo GetFireInfoVelocity(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle, double spin_k) {
+        double speed = GetLaunchSpeed(goalPos, roboHeading, firingAngle, spin_k) * Shooter.FIRE_MOTOR_SPEED_OFFSET;
         if (Double.isNaN(speed)) return null;
 
         double vy = Math.sin(Math.toRadians(firingAngle)) * speed;
@@ -90,11 +92,19 @@ public class Ballistics {
         return info;
     }
 
-    public static FireInfo GetFireInfoWithVelocityInch(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle) {
+    public static FireInfo GetFireInfoWithVelocityInch(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle, double spin_k) {
         final double IN_PER_M = 39.3700787402;
         Coordinate3D g = new Coordinate3D(goalPos.x / IN_PER_M, -goalPos.y / IN_PER_M, goalPos.z / IN_PER_M);
         Coordinate3D v = new Coordinate3D(velocity.x / IN_PER_M, velocity.y / IN_PER_M, velocity.z / IN_PER_M);
-        return GetFireInfoVelocity(g, v, roboHeading, firingAngle);
+        return GetFireInfoVelocity(g, v, roboHeading, firingAngle, spin_k);
+    }
+
+    public static FireInfo GetFireInfoTurretInch(Coordinate3D goalPos, Coordinate3D velocity, double roboHeading, double firingAngle, double spin_k)
+    {
+        final double IN_PER_M = 39.3700787402;
+        Coordinate3D g = new Coordinate3D(goalPos.x / IN_PER_M, -goalPos.y / IN_PER_M, goalPos.z / IN_PER_M);
+        Coordinate3D v = new Coordinate3D(velocity.x / IN_PER_M, velocity.y / IN_PER_M, velocity.z / IN_PER_M);
+        return null;//GetFireInfo(g, roboHeading, firingAngle, spin_k);
     }
 
 }

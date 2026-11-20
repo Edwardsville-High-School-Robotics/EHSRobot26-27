@@ -10,6 +10,9 @@ import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.Command;
 
+import org.firstinspires.ftc.teamcode.common.Ballistics;
+import org.firstinspires.ftc.teamcode.common.Coordinate3D;
+import org.firstinspires.ftc.teamcode.common.FireInfo;
 import org.firstinspires.ftc.teamcode.common.HiveType;
 import org.firstinspires.ftc.teamcode.systems.Feeder;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
@@ -18,13 +21,14 @@ import static com.pedropathing.api.Paths.*;
 import com.pedropathing.api.Paths;
 
 import com.pedropathing.api.PoseFactory;
+import com.pedropathing.ivy.behaviors.EndCondition;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
 public class BlueAudienceAuto {
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private static final Pose start = poseFactory.of(80, 12, 90);
+    public static final Pose start = poseFactory.of(80, 12, 90);
     private static final Pose path1 = poseFactory.of(132, 24, 180);
     private static final Pose path1Control1 = poseFactory.of(80, 34, 0);
 
@@ -32,15 +36,34 @@ public class BlueAudienceAuto {
         return Paths.curve(start, path1Control1, path1).linear(start, path1);
     }
     public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
-        Command shootCommand = Command.build().setExecute(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
-        Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
-        Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
-        Command llTask = Command.build();//.setExecute(llSystem::Detect).setDone(()->{return false;});
+        Command aim = shooter.GetCommand(follower, llSystem, HiveType.BLUE_AUDIENCE);
+        Command spinupCommand = shooter.SpinUpCommand(follower, llSystem, HiveType.BLUE_AUDIENCE);
+        Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(() -> {
+            return true;
+        });
+        Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(() -> {
+            return true;
+        });
+        Command llTask = Command.build().setExecute(llSystem::Detect).setDone(() -> {
+            return false;
+        });
 
-        return race(llTask, sequential(
-                // shoot
-//                race(sequential(waitUntil(() -> {return llSystem.IsHiveUp(HiveType.BLUE_AUDIENCE);}), shootCommand), waitMs(20000)),
-                follow(follower, path1())
-        ));
+        Command shoot = sequential(spinupCommand, startFeeding, aim).setEnd((EndCondition cond)->{feeder.StopFeeding();});
+
+        return race(
+                llTask,
+                sequential(
+                        // shoot
+                        race(
+                                sequential(
+                                        waitUntil(() -> {
+                                            return llSystem.IsHiveUp(HiveType.BLUE_AUDIENCE);
+                                        }),
+                                        shoot),
+                                waitMs(20000)
+                        ),
+                        follow(follower, path1())
+                )
+        );
     }
 }

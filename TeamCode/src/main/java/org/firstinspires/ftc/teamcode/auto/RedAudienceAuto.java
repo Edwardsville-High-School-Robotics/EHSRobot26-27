@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import static com.pedropathing.ivy.groups.Groups.race;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
@@ -10,9 +11,15 @@ import com.pedropathing.api.Paths;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.behaviors.EndCondition;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
+import org.firstinspires.ftc.teamcode.common.Ballistics;
+import org.firstinspires.ftc.teamcode.common.Coordinate3D;
+import org.firstinspires.ftc.teamcode.common.FireInfo;
+import org.firstinspires.ftc.teamcode.common.HiveType;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.systems.Feeder;
 import org.firstinspires.ftc.teamcode.systems.LLSystem;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
@@ -21,33 +28,43 @@ public class RedAudienceAuto {
 
     private static final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private static final Pose start = poseFactory.of(58.1274, 4.1954, 90);
-    private static final Pose point1 = poseFactory.of(15.1981, 3.5593, 0.8489);
-    private static final Pose point2 = poseFactory.of(58.0315, 4.887, -178.2246);
-    private static final Pose point3 = poseFactory.of(7.8611, 100.513, -62.3162);
+    public static Pose start = poseFactory.of(60, 8, 90);
+    public static final Pose path1 = poseFactory.of(36, 9, 180);
+    public static final Pose path1Control1 = poseFactory.of(48, 24, 0);
+    public static final Pose point2 = poseFactory.of(9, 9, 180);
+    public static final Pose point3Start = poseFactory.of(9, 9, 180);
+    public static final Pose point3 = poseFactory.of(8.2924, 92.9807, 0);
+    public static final Pose point3Control1 = poseFactory.of(35.9151, 49.3176, 0);
 
-    public static Path feed1() {
-        return Paths.line(start, point1).reverseTangent();
+    public static Path OrientToFeed() {
+        return Paths.curve(start, path1Control1, path1).linear(start, path1);
     }
 
-    public static Path park2() {
-        return Paths.line(point1, point3).reverseTangent();
+    public static Path Feed() {
+        return Paths.line(path1, point2).tangent().with(Constants.foresightConfig.maxVelocityConstraint.at(6.0));
     }
-//    public static Path park2() {
-//        return Paths.line(start, point3).reverseTangent();
-//    }
 
-    public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llsystem) {
-        Command shootCommand = Command.build().setStart(shooter::Shoot).setDone(()->{return !shooter.IsShooting();});
+    public static Path ToPark() {
+        return Paths.curve(point3Start, point3Control1, point3).linear(point3Start, point3);
+    }
+
+    public static Command autoRoutine(Follower follower, Shooter shooter, Feeder feeder, LLSystem llSystem) {
+        Command aim = shooter.GetCommand(follower, llSystem, HiveType.RED_AUDIENCE);
+        Command spinupCommand = shooter.SpinUpCommand(follower, llSystem, HiveType.RED_AUDIENCE);
         Command startFeeding = Command.build().setStart(feeder::StartFeeding).setDone(()->{return true;});
         Command stopFeeding = Command.build().setStart(feeder::StopFeeding).setDone(()->{return true;});
+        Command llTask = Command.build().setExecute(llSystem::Detect).setDone(() -> {
+            return false;
+        });
+        Command shoot = sequential(spinupCommand, startFeeding, aim).setEnd((EndCondition cond)->{feeder.StopFeeding();});
 
-        return sequential(
-                //shootCommand,
-                //startFeeding,
-                follow(follower, feed1()),
-                //stopFeeding,
-                follow(follower, park2())
-        );
+        return race(llTask,sequential(
+                shoot,
+                follow(follower, OrientToFeed()),
+                startFeeding,
+                follow(follower, Feed()),
+                stopFeeding,
+                follow(follower, ToPark())
+        ));
     }
 }

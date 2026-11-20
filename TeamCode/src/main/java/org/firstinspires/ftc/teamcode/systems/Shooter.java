@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 import com.pedropathing.utils.Timer;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -16,11 +20,12 @@ import org.firstinspires.ftc.teamcode.common.HiveType;
 
 public class Shooter {
     public static final double FIRE_SPEED = 4;
-    public static final double FIRE_ANGLE = 83.56;
+    public static final double FIRE_ANGLE_POLLEN = 83.56;
+    public static final double FIRE_ANGLE_NECTAR = 83.56; // 81.5
     final double WHEEL_CIRCUMFERENCE = 0.096 * Math.PI;
-    public static double FIRE_MOTOR_SPEED_OFFSET = 1.13;
+    public static double FIRE_MOTOR_SPEED_OFFSET = 1.29;
+    public static double MOTOR_SPEED_THRESHOLD = 0.85;
     double SHOOT_TIME = 3.0; // run shoot for 3 seconds
-
     private boolean isShooting;
     private Timer shooterTimer; // times how long we've been shooting
 
@@ -41,10 +46,15 @@ public class Shooter {
 
     public static final Coordinate3D LL_OFFSET = new Coordinate3D(0,0,0); // offset of the shooter from the camera's position
 
+    FireInfo curPollen, curNectar;
     public Shooter(HardwareMap map)
     {
         shooterMotorSmall = map.get(DcMotorEx.class, "pollen_shooter");
         shooterMotorSmall.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shooterMotorBig = map.get(DcMotorEx.class, "nectarShooter");
+        shooterMotorBig.setDirection(DcMotorSimple.Direction.FORWARD);
+
         isShooting = false;
         shooterTimer = new Timer();
     }
@@ -66,6 +76,11 @@ public class Shooter {
             StopShooting();
     }
 
+    public boolean IsTimerElapsed()
+    {
+        return shooterTimer.seconds() > SHOOT_TIME;
+    }
+
     public boolean IsShooting()
     {
         return isShooting;
@@ -81,7 +96,7 @@ public class Shooter {
     {
         isShooting = false;
         shooterMotorSmall.setVelocity(0);
-//        shooterMotorBig.setVelocity(0);
+        shooterMotorBig.setVelocity(0);
     }
     public void UpdateFireRateOffset(double fireRate)
     {
@@ -124,13 +139,56 @@ public class Shooter {
         yoffset += yoff;
     }
 
-    public void UpdateFiring(FireInfo info)
+    public CommandBuilder SpinUpCommand(Follower follower, LLSystem llsystem, HiveType htype)
+    {
+        return Command.build().setStart(this::StartShooting).setExecute(() -> {
+
+                    Coordinate3D hivePos = llsystem.GetHive(htype).CalculatePos(follower.pose().heading());
+                    if (hivePos == null)
+                        return;
+
+                    curPollen = Ballistics.GetFireInfoWithVelocityInch(hivePos,
+                            new Coordinate3D(follower.velocity().vy, 0, follower.velocity().vx),
+                            0,
+                            Shooter.FIRE_ANGLE_POLLEN,
+                            Ballistics.SPIN_K_POLLEN);
+
+                    this.UpdateFiring(curPollen,null);})
+                .setDone(() -> {
+                        if (shooterTimer.seconds() > 2.0) return true;   // give up and move on
+                        return curPollen != null
+                                && shooterMotorSmall.getVelocity(AngleUnit.DEGREES)
+                                >= calculateMotorSpeed(curPollen.speed / 39.3700787402) * MOTOR_SPEED_THRESHOLD;
+                    });
+    }
+    public CommandBuilder GetCommand(Follower follower, LLSystem llsystem, HiveType htype)
+    {
+        return Command.build().setStart(this::StartShooting).setExecute(() -> {
+
+                    Coordinate3D hivePos = llsystem.GetHive(htype).CalculatePos(follower.pose().heading());
+                    if (hivePos == null)
+                        return;
+
+                    FireInfo pollen = Ballistics.GetFireInfoWithVelocityInch(hivePos,
+                            new Coordinate3D(follower.velocity().vy, 0, follower.velocity().vx),
+                            0,
+                            Shooter.FIRE_ANGLE_POLLEN,
+                            Ballistics.SPIN_K_POLLEN);
+
+                    this.UpdateFiring(pollen,null);})
+                .setDone(this::IsTimerElapsed).setEnd((EndCondition cond) -> {
+                    this.StopShooting();
+                });
+    }
+    public void UpdateFiring(FireInfo pollen, FireInfo nectar)
     {
         if (isShooting) {
-            angle = info.launchAngle;
 //            shooterServoBig.setPosition(angle * R);
 //            shooterServoSmall.setPosition(angle * R);
-            shooterMotorSmall.setVelocity(calculateMotorSpeed(info.speed / 39.3700787402), AngleUnit.DEGREES);
+            if (pollen != null)
+                shooterMotorSmall.setVelocity(calculateMotorSpeed(pollen.speed / 39.3700787402), AngleUnit.DEGREES);
+            if (nectar != null)
+                shooterMotorBig.setVelocity(calculateMotorSpeed(nectar.speed / 39.3700787402), AngleUnit.DEGREES);
 //            shooterMotorBig.setVelocity(calculateMotorSpeed(FIRE_SPEED));
         }
     }
